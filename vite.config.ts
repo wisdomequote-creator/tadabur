@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Served at '/' locally; GitHub Pages sets VITE_BASE='/tadabur/' at build time.
+  base: process.env.VITE_BASE || '/',
   plugins: [react()],
   ssgOptions: {
     // 'defer' (not 'async') so the entry runs AFTER the full document is parsed —
