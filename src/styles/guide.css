@@ -1,0 +1,121 @@
+.guide {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 3rem;
+  padding-block: 2.5rem 3rem;
+  align-items: start;
+}
+
+/* ---- TOC ---- */
+.guide__toc {
+  position: sticky;
+  top: 84px;
+}
+.guide__toc-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border-right: 1px solid var(--hairline);
+}
+.guide__toc-link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.5rem 0.9rem;
+  margin-right: -1px;
+  border-right: 2px solid transparent;
+  color: var(--parchment-dim);
+  font-size: 0.92rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.guide__toc-link:hover {
+  color: var(--parchment);
+}
+.guide__toc-link.is-active {
+  color: var(--brass);
+  border-right-color: var(--brass);
+}
+.guide__toc-num {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--brass-dim);
+}
+
+/* ---- Body ---- */
+.guide__body {
+  max-width: 68ch;
+}
+.guide__header {
+  margin-bottom: 2rem;
+}
+.guide__title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-top: 0.5rem;
+}
+.guide__section {
+  padding-block: 1.75rem;
+  border-top: 1px solid var(--hairline);
+  scroll-margin-top: 84px;
+}
+.guide__section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+.guide__section-num {
+  font-family: var(--font-display);
+  color: var(--brass);
+  font-size: 1.1rem;
+}
+.guide__section-body {
+  color: var(--parchment-dim);
+  font-size: 1.02rem;
+  line-height: 1.9;
+}
+.guide__section-body p {
+  margin-bottom: 1.1em;
+}
+
+/* Quranic quotations */
+.guide__section-body .quran,
+.quran {
+  display: block;
+  quotes: none;
+  font-family: var(--font-quran);
+  font-size: 1.55rem;
+  line-height: 2.2;
+  color: var(--brass);
+  text-align: center;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-block: 1px solid var(--brass-hair);
+}
+.quran::before,
+.quran::after {
+  content: '';
+}
+
+@media (max-width: 820px) {
+  .guide {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .guide__toc {
+    position: static;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 1rem;
+    background: var(--surface-1);
+  }
+  .guide__toc-list {
+    border-right: 0;
+  }
+  .guide__toc-link {
+    border-right: 0;
+  }
+  .guide__toc-link.is-active {
+    border-right: 0;
+  }
+}
