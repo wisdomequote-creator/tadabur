@@ -119,3 +119,236 @@
     border-right: 0;
   }
 }
+
+/* ============================================================= *
+ *  Landing methodology content — callouts, principles, controls *
+ * ============================================================= */
+
+/* Base lists (:where keeps specificity 0 so the custom lists below win) */
+.guide__section-body :where(ul, ol) {
+  margin: 0 0 1.1em;
+  padding-inline-start: 1.3em;
+}
+.guide__section-body :where(ul, ol) li {
+  margin-bottom: 0.45em;
+}
+.guide__section-body strong {
+  color: var(--parchment);
+  font-weight: 600;
+}
+
+/* Example callout */
+.example {
+  display: flex;
+  gap: 0.85rem;
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  border-right: 3px solid var(--teal);
+}
+.example__tag {
+  flex: 0 0 auto;
+  font-family: var(--font-ui);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--teal-bright);
+  padding-top: 0.35rem;
+}
+.example__body {
+  font-size: 0.96rem;
+  color: var(--parchment-dim);
+  line-height: 1.85;
+}
+.example__body p {
+  margin: 0;
+}
+.example__body ul {
+  margin: 0;
+  padding-inline-start: 1.2em;
+}
+
+/* Principles — numbered cards */
+.principles {
+  list-style: none;
+  counter-reset: principle;
+  margin: 1.5rem 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.principle {
+  counter-increment: principle;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-top: 2px solid var(--brass-hair);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+}
+.principle__title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 1.12rem;
+  margin-bottom: 0.5rem;
+  color: var(--parchment);
+}
+.principle__title::before {
+  content: counter(principle, arabic-indic);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+  color: var(--brass);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+}
+.principle > p {
+  margin: 0;
+  color: var(--parchment-dim);
+}
+
+/* Obstacles */
+.obstacles {
+  list-style: none;
+  counter-reset: obs;
+  margin: 1.25rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.obstacles li {
+  counter-increment: obs;
+  position: relative;
+  padding-inline-start: 2.5rem;
+  color: var(--parchment-dim);
+  line-height: 1.9;
+}
+.obstacles li::before {
+  content: counter(obs, arabic-indic);
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.15rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  color: var(--danger);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+}
+
+/* Ten controls — numbered grid */
+.controls {
+  list-style: none;
+  counter-reset: ctrl;
+  margin: 1.5rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+@media (min-width: 700px) {
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.control {
+  counter-increment: ctrl;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+}
+.control h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.02rem;
+  margin-bottom: 0.45rem;
+  color: var(--parchment);
+}
+.control h3::before {
+  content: counter(ctrl, arabic-indic);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+  color: var(--brass);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+}
+.control p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--parchment-dim);
+  line-height: 1.85;
+}
+
+/* Worked example (Al-Hujurat) */
+.worked {
+  margin: 1.25rem 0;
+  padding: 1.1rem 1.25rem;
+  background: var(--surface-2);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+}
+.worked__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.worked__list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  color: var(--parchment-dim);
+}
+.worked__range {
+  flex: 0 0 auto;
+  min-width: 3.4rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  color: var(--brass);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+  padding: 0.12rem 0.5rem;
+}
+.worked__note {
+  margin: 0.85rem 0 0;
+  color: var(--parchment-faint);
+  font-size: 0.9rem;
+}
+
+/* Closing call-to-action */
+.cta-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+}
+.cta-panel__text {
+  margin: 0;
+  color: var(--parchment);
+  font-size: 1.05rem;
+}

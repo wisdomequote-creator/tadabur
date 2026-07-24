@@ -22,7 +22,6 @@ export const routes: RouteRecord[] = [
         getStaticPaths: () =>
           Array.from({ length: TOTAL_SURAHS }, (_, i) => `/surah/${i + 1}`),
       },
-      { path: 'guide', lazy: () => import('./pages/Guide') },
       { path: '*', lazy: () => import('./pages/NotFound') },
     ],
   },

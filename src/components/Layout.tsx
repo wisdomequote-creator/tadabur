@@ -32,11 +32,11 @@ export default function Layout() {
             <span className="brand__word">تدبر</span>
           </NavLink>
           <nav className="site-nav" aria-label="التنقل الرئيسي">
+            <NavLink to="/" end className="site-nav__link">
+              المنهج
+            </NavLink>
             <NavLink to="/surahs" className="site-nav__link">
               السور
-            </NavLink>
-            <NavLink to="/guide" className="site-nav__link">
-              منهج التدبر
             </NavLink>
           </nav>
         </div>
