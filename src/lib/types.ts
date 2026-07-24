@@ -32,11 +32,17 @@ export interface Axis {
   notes: string
   /** Ayah numbers assigned to this axis, kept sorted ascending. */
   ayat: number[]
+  /** Position on the mind-map canvas (px, canvas coordinate space). */
+  x: number
+  y: number
 }
 
 export interface WorkspaceState {
   surahNumber: number
   surahTheme: string
+  /** Position of the surah-theme (root) node on the canvas. */
+  rootX: number
+  rootY: number
   axes: Axis[]
   /** Not-yet-assigned ayah numbers, kept sorted ascending. */
   bank: number[]

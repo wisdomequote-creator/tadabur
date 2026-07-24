@@ -179,12 +179,13 @@
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   padding: 0.9rem;
-  height: 100%;
 }
 .axis__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--hairline);
 }
 .axis__delete {
   display: inline-flex;
@@ -200,17 +201,22 @@
 }
 .axis__title {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--brass-hair);
-  border-radius: 0;
-  padding: 0.35rem 0.15rem;
-  color: var(--parchment);
+  font-size: 1.02rem;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.6rem;
+  color: var(--brass);
 }
 .axis__title:focus {
   outline: none;
-  border-bottom-color: var(--brass);
+  border-color: var(--brass);
+  background: var(--surface-2);
+}
+.axis__title::placeholder {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
 }
 
 /* ---- The circle (axis drop zone) ---- */
@@ -219,17 +225,29 @@
   aspect-ratio: 1 / 1;
   width: 100%;
   border-radius: 50%;
-  background: var(--surface-1);
-  border: 2px solid var(--brass-hair);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(201, 169, 97, 0.07), transparent 68%),
+    var(--surface-1);
+  border: 1.5px solid var(--brass-hair);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  overflow: auto;
+  padding: 13%;
+  overflow: visible;
   transition: border-color 0.15s ease, background 0.15s ease;
+}
+/* inner khātim ring — a manuscript "vessel" feel */
+.circle::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 169, 97, 0.14);
+  pointer-events: none;
 }
 .circle--empty {
   border-style: dashed;
+  border-color: var(--hairline);
 }
 .circle--over {
   border-color: var(--teal-bright);
@@ -376,8 +394,11 @@
 }
 
 .axis__count {
-  text-align: left;
-  color: var(--brass-dim);
+  align-self: center;
+  color: var(--brass);
+  border: 1px solid var(--brass-hair);
+  border-radius: 999px;
+  padding: 0.12rem 0.75rem;
 }
 
 /* ---- Bank ---- */
@@ -479,5 +500,113 @@
   }
   .reader__text {
     font-size: 1.3rem;
+  }
+}
+
+/* ============================================================= *
+ *  Mind-map — draggable nodes with connector lines             *
+ * ============================================================= */
+.mindmap-wrap {
+  margin-bottom: 2.5rem;
+}
+.mindmap-wrap__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.mindmap-wrap__meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.mindmap-hint {
+  font-size: 0.78rem;
+  color: var(--parchment-faint);
+}
+
+.mindmap__scroll {
+  overflow: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(201, 169, 97, 0.08) 1px, transparent 0) 0 0 / 26px 26px;
+  background-color: rgba(18, 16, 27, 0.4);
+  scrollbar-color: var(--brass-dim) transparent;
+}
+
+/* The fixed-size canvas the nodes live on */
+.mindmap {
+  position: relative;
+  margin-inline: auto;
+}
+.mindmap--dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.mindmap__lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mindmap__line {
+  fill: none;
+  stroke: var(--brass-hair);
+  stroke-width: 2;
+}
+.mindmap__anchor {
+  fill: var(--brass-dim);
+}
+.mindmap__anchor--root {
+  fill: var(--brass);
+}
+
+/* Nodes */
+.node {
+  position: absolute;
+  touch-action: none;
+}
+.node--root {
+  background: var(--surface-2);
+  border: 1px solid var(--brass-hair);
+  border-top: 2px solid var(--brass);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.85rem;
+}
+.node__handle,
+.axis__head--drag {
+  cursor: grab;
+  touch-action: none;
+}
+.mindmap--dragging .node__handle,
+.mindmap--dragging .axis__head--drag {
+  cursor: grabbing;
+}
+.node__handle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.axis__grip {
+  color: var(--brass-dim);
+  font-size: 0.9rem;
+  letter-spacing: -0.1em;
+}
+.node--root .tree__root-input {
+  background: var(--surface-1);
+}
+
+@media (max-width: 640px) {
+  .mindmap-wrap__bar {
+    gap: 0.5rem;
+  }
+  .mindmap-hint {
+    flex-basis: 100%;
   }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { DragEvent } from 'react'
+import type { DragEvent, HTMLAttributes } from 'react'
 import type { Axis } from '../../lib/types'
 import { toArabicNumerals } from '../../lib/numerals'
 import AyahChip, { DRAG_MIME } from './AyahChip'
@@ -14,6 +14,8 @@ interface AxisColumnProps {
   onSetNotes: (axisId: string, value: string) => void
   onPlaceHere: (n: number, axisId: string) => void
   onDelete: (axisId: string) => void
+  /** Pointer handlers spread on the header so it acts as the node's drag handle. */
+  handleProps?: HTMLAttributes<HTMLElement>
 }
 
 function readDraggedAyah(e: DragEvent): number | null {
@@ -32,6 +34,7 @@ export default function AxisColumn({
   onSetNotes,
   onPlaceHere,
   onDelete,
+  handleProps,
 }: AxisColumnProps) {
   const [dragOver, setDragOver] = useState(false)
 
@@ -50,13 +53,21 @@ export default function AxisColumn({
 
   return (
     <section className="axis" aria-label={`المحور ${toArabicNumerals(index + 1)}`}>
-      <header className="axis__head">
-        <span className="axis__ord eyebrow">محور {toArabicNumerals(index + 1)}</span>
+      <header className={`axis__head${handleProps ? ' axis__head--drag' : ''}`} {...handleProps}>
+        <span className="axis__ord eyebrow">
+          {handleProps && (
+            <span className="axis__grip" aria-hidden="true">
+              ⠿
+            </span>
+          )}
+          محور {toArabicNumerals(index + 1)}
+        </span>
         <button
           type="button"
           className="axis__delete"
           aria-label={`حذف المحور ${toArabicNumerals(index + 1)}`}
           title="حذف المحور"
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onDelete(axis.id)}
         >
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">

@@ -8,7 +8,7 @@ import {
 import { clearState, loadState, saveState } from '../../lib/workspace/storage'
 import { buildExportText, downloadText } from '../../lib/workspace/exportText'
 import AyahStar from '../AyahStar'
-import AxisColumn from './AxisColumn'
+import MindMap from './MindMap'
 import AyahBank from './AyahBank'
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
@@ -121,62 +121,37 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
         </div>
       </div>
 
-      {/* Tree: موضوع السورة is the root; المحاور branch out below it */}
-      <section className="tree-wrap container" aria-label="شجرة المحاور">
-        <div className="tree-wrap__bar">
-          <span className="eyebrow">شجرة المحاور</span>
-          <span className="save-indicator" aria-live="polite">
-            {status === 'saved' ? '✓ حُفظ' : status === 'saving' ? '…يُحفظ' : ''}
-          </span>
-        </div>
-
-        <div className="tree">
-          <div className="tree__root">
-            <label className="tree__root-label eyebrow" htmlFor="surah-theme">
-              موضوع السورة
-            </label>
-            <textarea
-              id="surah-theme"
-              className="tree__root-input"
-              value={state.surahTheme}
-              placeholder="ما الخيط الجامع الذي تدور حوله السورة كلها؟"
-              rows={2}
-              onChange={(e) => dispatch({ type: 'setSurahTheme', value: e.target.value })}
-            />
-          </div>
-
-          <div className="tree__scroll">
-            <ul className="tree__level" aria-label="محاور السورة">
-              {state.axes.map((axis, i) => (
-                <li className="tree__node" key={axis.id}>
-                  <AxisColumn
-                    axis={axis}
-                    index={i}
-                    textOf={textOf}
-                    selectedAyah={selectedAyah}
-                    onSelectAyah={toggleSelect}
-                    onSetTitle={(id, value) => dispatch({ type: 'setAxisTitle', axisId: id, value })}
-                    onSetNotes={(id, value) => dispatch({ type: 'setAxisNotes', axisId: id, value })}
-                    onPlaceHere={placeInAxis}
-                    onDelete={handleDeleteAxis}
-                  />
-                </li>
-              ))}
-              <li className="tree__node tree__node--add">
-                <button
-                  type="button"
-                  className="add-node"
-                  onClick={() => dispatch({ type: 'addAxis' })}
-                >
-                  <span className="add-node__plus" aria-hidden="true">
-                    +
-                  </span>
-                  <span>محور جديد</span>
-                </button>
-              </li>
-            </ul>
+      {/* Mind-map: drag the surah-theme root and each محور; the lines follow */}
+      <section className="mindmap-wrap" aria-label="خريطة المحاور">
+        <div className="container mindmap-wrap__bar">
+          <span className="eyebrow">خريطة المحاور</span>
+          <div className="mindmap-wrap__meta">
+            <span className="mindmap-hint">اسحب رأس المحور «⠿» لتحريكه</span>
+            <span className="save-indicator" aria-live="polite">
+              {status === 'saved' ? '✓ حُفظ' : status === 'saving' ? '…يُحفظ' : ''}
+            </span>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => dispatch({ type: 'addAxis' })}
+            >
+              + محور جديد
+            </button>
           </div>
         </div>
+
+        <MindMap
+          state={state}
+          textOf={textOf}
+          selectedAyah={selectedAyah}
+          onMoveNode={(id, x, y) => dispatch({ type: 'moveNode', id, x, y })}
+          onSetTheme={(value) => dispatch({ type: 'setSurahTheme', value })}
+          onSetAxisTitle={(id, value) => dispatch({ type: 'setAxisTitle', axisId: id, value })}
+          onSetAxisNotes={(id, value) => dispatch({ type: 'setAxisNotes', axisId: id, value })}
+          onPlaceHere={placeInAxis}
+          onDelete={handleDeleteAxis}
+          onSelectAyah={toggleSelect}
+        />
       </section>
 
       {/* Bank */}

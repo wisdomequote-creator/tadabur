@@ -1,5 +1,21 @@
 import type { Axis, SurahData, WorkspaceState } from '../types'
 
+// ---- Canvas layout ------------------------------------------------------
+// Nodes are positioned in a fixed coordinate space (px). The canvas element is
+// this wide and scrolls on small screens; no scaling, so canvas px == screen px.
+export const CANVAS_W = 1040
+export const ROOT_W = 300
+
+/** Deterministic default slot for the axis at a given index (no random ⇒ SSR-safe). */
+export function axisSlot(index: number): { x: number; y: number } {
+  return {
+    x: 120 + (index % 3) * 320,
+    y: 290 + Math.floor(index / 3) * 250,
+  }
+}
+
+const ROOT_DEFAULT = { x: Math.round((CANVAS_W - ROOT_W) / 2), y: 24 }
+
 export type WorkspaceAction =
   | { type: 'hydrate'; state: WorkspaceState }
   | { type: 'setSurahTheme'; value: string }
@@ -7,28 +23,50 @@ export type WorkspaceAction =
   | { type: 'deleteAxis'; axisId: string }
   | { type: 'setAxisTitle'; axisId: string; value: string }
   | { type: 'setAxisNotes'; axisId: string; value: string }
+  | { type: 'moveNode'; id: string; x: number; y: number }
   | { type: 'moveToAxis'; n: number; axisId: string }
   | { type: 'moveToBank'; n: number }
   | { type: 'reset'; ayahCount: number }
 
 const sortNums = (nums: number[]): number[] => [...nums].sort((a, b) => a - b)
 
-const emptyAxis = (id: string): Axis => ({ id, title: '', notes: '', ayat: [] })
+const emptyAxis = (id: string, index: number): Axis => ({
+  id,
+  title: '',
+  notes: '',
+  ayat: [],
+  ...axisSlot(index),
+})
 
 export function initWorkspace(surah: SurahData): WorkspaceState {
   return {
     surahNumber: surah.number,
     surahTheme: '',
+    rootX: ROOT_DEFAULT.x,
+    rootY: ROOT_DEFAULT.y,
     bank: surah.ayat.map((a) => a.n),
-    axes: [emptyAxis('axis-1'), emptyAxis('axis-2'), emptyAxis('axis-3')],
+    axes: [emptyAxis('axis-1', 0), emptyAxis('axis-2', 1), emptyAxis('axis-3', 2)],
     nextAxisId: 4,
   }
 }
 
-/**
- * An ayah lives in exactly one place. Pull it out of wherever it currently is —
- * the bank or any axis — so every move can be expressed as detach-then-place.
- */
+const num = (v: unknown, fallback: number): number =>
+  typeof v === 'number' && Number.isFinite(v) ? v : fallback
+
+/** Backfill positions for states saved before the mind-map (older localStorage). */
+export function normalizeState(s: WorkspaceState): WorkspaceState {
+  return {
+    ...s,
+    rootX: num(s.rootX, ROOT_DEFAULT.x),
+    rootY: num(s.rootY, ROOT_DEFAULT.y),
+    axes: s.axes.map((a, i) => ({
+      ...a,
+      x: num(a.x, axisSlot(i).x),
+      y: num(a.y, axisSlot(i).y),
+    })),
+  }
+}
+
 function detach(
   state: WorkspaceState,
   n: number,
@@ -47,7 +85,7 @@ export function workspaceReducer(
 ): WorkspaceState {
   switch (action.type) {
     case 'hydrate':
-      return action.state
+      return normalizeState(action.state)
 
     case 'setSurahTheme':
       return { ...state, surahTheme: action.value }
@@ -55,7 +93,7 @@ export function workspaceReducer(
     case 'addAxis':
       return {
         ...state,
-        axes: [...state.axes, emptyAxis(`axis-${state.nextAxisId}`)],
+        axes: [...state.axes, emptyAxis(`axis-${state.nextAxisId}`, state.nextAxisId - 1)],
         nextAxisId: state.nextAxisId + 1,
       }
 
@@ -85,6 +123,18 @@ export function workspaceReducer(
         ),
       }
 
+    case 'moveNode': {
+      if (action.id === 'root') {
+        return { ...state, rootX: action.x, rootY: action.y }
+      }
+      return {
+        ...state,
+        axes: state.axes.map((a) =>
+          a.id === action.id ? { ...a, x: action.x, y: action.y } : a,
+        ),
+      }
+    }
+
     case 'moveToAxis': {
       const { bank, axes } = detach(state, action.n)
       return {
@@ -105,8 +155,10 @@ export function workspaceReducer(
       return {
         surahNumber: state.surahNumber,
         surahTheme: '',
+        rootX: ROOT_DEFAULT.x,
+        rootY: ROOT_DEFAULT.y,
         bank: Array.from({ length: action.ayahCount }, (_, i) => i + 1),
-        axes: [emptyAxis('axis-1'), emptyAxis('axis-2'), emptyAxis('axis-3')],
+        axes: [emptyAxis('axis-1', 0), emptyAxis('axis-2', 1), emptyAxis('axis-3', 2)],
         nextAxisId: 4,
       }
 
