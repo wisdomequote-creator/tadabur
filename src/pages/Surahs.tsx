@@ -4,24 +4,37 @@ import PageHead from '../components/PageHead'
 import indexData from '../data/index.json'
 import type { SurahMeta } from '../lib/types'
 import { toArabicNumerals, toAsciiNumerals } from '../lib/numerals'
+import { normalizeArabic } from '../lib/arabic'
 import { SITE_URL } from '../lib/constants'
 
 const surahs = indexData as SurahMeta[]
+
+// Precompute a normalized, diacritic-free name once per surah for search.
+const searchIndex = surahs.map((s) => ({
+  surah: s,
+  name: normalizeArabic(s.name),
+  english: s.englishName.toLowerCase(),
+  translation: s.englishNameTranslation.toLowerCase(),
+}))
 
 export function Component() {
   const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
-    const q = toAsciiNumerals(query.trim()).toLowerCase()
-    if (!q) return surahs
-    return surahs.filter((s) => {
-      return (
-        String(s.number).includes(q) ||
-        s.name.includes(query.trim()) ||
-        s.englishName.toLowerCase().includes(q) ||
-        s.englishNameTranslation.toLowerCase().includes(q)
-      )
-    })
+    const raw = query.trim()
+    if (!raw) return surahs
+    const q = toAsciiNumerals(raw).toLowerCase()
+    const qAr = normalizeArabic(raw)
+    return searchIndex
+      .filter((e) => {
+        return (
+          String(e.surah.number).includes(q) ||
+          (qAr.length > 0 && e.name.includes(qAr)) ||
+          e.english.includes(q) ||
+          e.translation.includes(q)
+        )
+      })
+      .map((e) => e.surah)
   }, [query])
 
   return (
