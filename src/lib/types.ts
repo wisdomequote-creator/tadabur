@@ -37,6 +37,13 @@ export interface Axis {
   y: number
 }
 
+/** A tadabur question and the answer the user works out for it. */
+export interface QAItem {
+  id: string
+  q: string
+  a: string
+}
+
 export interface WorkspaceState {
   surahNumber: number
   surahTheme: string
@@ -48,4 +55,7 @@ export interface WorkspaceState {
   bank: number[]
   /** Monotonic counter for deterministic axis ids (no random ⇒ no hydration drift). */
   nextAxisId: number
+  /** Tadabur questions with their answers. */
+  questions: QAItem[]
+  nextQuestionId: number
 }

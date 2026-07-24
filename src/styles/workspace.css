@@ -610,3 +610,117 @@
     flex-basis: 100%;
   }
 }
+
+/* ============================================================= *
+ *  Questions & answers — أسئلة التدبّر                          *
+ * ============================================================= */
+.qa {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--hairline);
+}
+.qa__bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+.qa__hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--parchment-dim);
+}
+.qa__empty {
+  margin: 0;
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--parchment-faint);
+}
+.qa__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+.qa-item {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-right: 2px solid var(--brass-hair);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+}
+.qa-item__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+.qa-item__num {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--brass);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+}
+.qa-item__q {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--parchment);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--brass-hair);
+  border-radius: 0;
+  padding: 0.35rem 0.15rem;
+}
+.qa-item__q:focus {
+  outline: none;
+  border-bottom-color: var(--brass);
+}
+.qa-item__q::placeholder {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--parchment-faint);
+}
+.qa-item__delete {
+  flex: 0 0 auto;
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--parchment-faint);
+  border-radius: var(--radius);
+  transition: color 0.15s ease;
+}
+.qa-item__delete:hover {
+  color: var(--danger);
+}
+.qa-item__a {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  color: var(--parchment);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+.qa-item__a:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+.qa-item__a::placeholder {
+  color: var(--parchment-faint);
+}

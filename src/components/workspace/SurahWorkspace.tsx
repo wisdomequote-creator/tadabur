@@ -10,6 +10,7 @@ import { buildExportText, downloadText } from '../../lib/workspace/exportText'
 import AyahStar from '../AyahStar'
 import MindMap from './MindMap'
 import AyahBank from './AyahBank'
+import QuestionsSection from './QuestionsSection'
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
 
@@ -164,6 +165,14 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
           selectionAssigned={selectionAssigned}
           onSelectAyah={toggleSelect}
           onReturnToBank={returnToBank}
+        />
+
+        {/* Questions & answers — the core of tadabur */}
+        <QuestionsSection
+          questions={state.questions}
+          onAdd={() => dispatch({ type: 'addQuestion' })}
+          onDelete={(id) => dispatch({ type: 'deleteQuestion', id })}
+          onSet={(id, field, value) => dispatch({ type: 'setQuestion', id, field, value })}
         />
 
         {/* Actions */}

@@ -44,6 +44,17 @@ export function buildExportText(surah: SurahData, state: WorkspaceState): string
     L.push('')
   }
 
+  const answeredOrAsked = state.questions.filter((q) => q.q.trim() || q.a.trim())
+  if (answeredOrAsked.length > 0) {
+    L.push('أسئلة التدبّر:')
+    L.push('─'.repeat(30))
+    answeredOrAsked.forEach((item, i) => {
+      L.push(`  س${toArabicNumerals(i + 1)}: ${item.q.trim() || '(بدون سؤال)'}`)
+      if (item.a.trim()) L.push(`  ج: ${item.a.trim()}`)
+      L.push('')
+    })
+  }
+
   L.push('═'.repeat(40))
   L.push('أُنشئ بمساعدة «تدبر»')
 

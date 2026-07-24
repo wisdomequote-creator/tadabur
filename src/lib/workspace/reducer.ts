@@ -1,4 +1,4 @@
-import type { Axis, SurahData, WorkspaceState } from '../types'
+import type { Axis, QAItem, SurahData, WorkspaceState } from '../types'
 
 // ---- Canvas layout ------------------------------------------------------
 // Nodes are positioned in a fixed coordinate space (px). The canvas element is
@@ -26,6 +26,9 @@ export type WorkspaceAction =
   | { type: 'moveNode'; id: string; x: number; y: number }
   | { type: 'moveToAxis'; n: number; axisId: string }
   | { type: 'moveToBank'; n: number }
+  | { type: 'addQuestion' }
+  | { type: 'deleteQuestion'; id: string }
+  | { type: 'setQuestion'; id: string; field: 'q' | 'a'; value: string }
   | { type: 'reset'; ayahCount: number }
 
 const sortNums = (nums: number[]): number[] => [...nums].sort((a, b) => a - b)
@@ -38,6 +41,8 @@ const emptyAxis = (id: string, index: number): Axis => ({
   ...axisSlot(index),
 })
 
+const emptyQuestion = (id: string): QAItem => ({ id, q: '', a: '' })
+
 export function initWorkspace(surah: SurahData): WorkspaceState {
   return {
     surahNumber: surah.number,
@@ -47,14 +52,17 @@ export function initWorkspace(surah: SurahData): WorkspaceState {
     bank: surah.ayat.map((a) => a.n),
     axes: [emptyAxis('axis-1', 0), emptyAxis('axis-2', 1), emptyAxis('axis-3', 2)],
     nextAxisId: 4,
+    questions: [emptyQuestion('q-1')],
+    nextQuestionId: 2,
   }
 }
 
 const num = (v: unknown, fallback: number): number =>
   typeof v === 'number' && Number.isFinite(v) ? v : fallback
 
-/** Backfill positions for states saved before the mind-map (older localStorage). */
+/** Backfill fields for states saved before newer features (older localStorage). */
 export function normalizeState(s: WorkspaceState): WorkspaceState {
+  const hasQuestions = Array.isArray(s.questions)
   return {
     ...s,
     rootX: num(s.rootX, ROOT_DEFAULT.x),
@@ -64,6 +72,8 @@ export function normalizeState(s: WorkspaceState): WorkspaceState {
       x: num(a.x, axisSlot(i).x),
       y: num(a.y, axisSlot(i).y),
     })),
+    questions: hasQuestions ? s.questions : [emptyQuestion('q-1')],
+    nextQuestionId: num(s.nextQuestionId, hasQuestions ? s.questions.length + 1 : 2),
   }
 }
 
@@ -151,6 +161,27 @@ export function workspaceReducer(
       return { ...state, bank: sortNums([...bank, action.n]), axes }
     }
 
+    case 'addQuestion':
+      return {
+        ...state,
+        questions: [...state.questions, emptyQuestion(`q-${state.nextQuestionId}`)],
+        nextQuestionId: state.nextQuestionId + 1,
+      }
+
+    case 'deleteQuestion':
+      return {
+        ...state,
+        questions: state.questions.filter((item) => item.id !== action.id),
+      }
+
+    case 'setQuestion':
+      return {
+        ...state,
+        questions: state.questions.map((item) =>
+          item.id === action.id ? { ...item, [action.field]: action.value } : item,
+        ),
+      }
+
     case 'reset':
       return {
         surahNumber: state.surahNumber,
@@ -160,6 +191,8 @@ export function workspaceReducer(
         bank: Array.from({ length: action.ayahCount }, (_, i) => i + 1),
         axes: [emptyAxis('axis-1', 0), emptyAxis('axis-2', 1), emptyAxis('axis-3', 2)],
         nextAxisId: 4,
+        questions: [emptyQuestion('q-1')],
+        nextQuestionId: 2,
       }
 
     default:
