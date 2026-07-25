@@ -135,7 +135,12 @@ function parsePage(html: string): ParsedNarration[] {
     )
     if (!fontM) continue
     const text = cleanText(fontM[1] ?? '')
-    if (!text || !/قوله/.test(text)) continue
+    // A real narration is substantial prose. We do NOT gate on a specific opener
+    // like "قوله" — al-Wāḥidī also opens with "قال:", "قول تعالى", "نزلت…" etc.,
+    // and gating on "قوله" silently dropped genuine asbab (e.g. al-Baqara 144, 190).
+    // The table class already excludes the verse-display blocks, and placement is
+    // enforced below via the bracket / getAyah header.
+    if (text.length <= 25) continue
 
     const bm = text.match(/\[(\d+)(?:\s*[-–]\s*(\d+))?\]/)
     let from: number | null = bm ? Number(bm[1]) : null
