@@ -27,6 +27,7 @@ export default function AyahChip({ n, text, selected, size = 44, onSelect }: Aya
     <button
       type="button"
       className={`chip${selected ? ' chip--selected' : ''}`}
+      data-ayah={n}
       aria-pressed={selected}
       aria-label={`الآية ${toArabicNumerals(n)}${selected ? '، محدَّدة' : ''}. اضغط لقراءتها ونقلها.`}
       title={text}

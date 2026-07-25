@@ -7,7 +7,7 @@ import {
 } from '../../lib/workspace/reducer'
 import { clearState, loadState, saveState } from '../../lib/workspace/storage'
 import { buildExportText, downloadText } from '../../lib/workspace/exportText'
-import AyahStar from '../AyahStar'
+import AyahReader from '../AyahReader'
 import SearchModal from '../SearchModal'
 import MindMap from './MindMap'
 import AyahBank from './AyahBank'
@@ -101,29 +101,14 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
 
   return (
     <div className="workspace">
-      {/* Reader — the selected ayah's text appears here on tap (sticky) */}
-      <div className="container">
-        <div className={`reader${selectedAyah !== null ? ' reader--active' : ''}`} aria-live="polite">
-          {selectedAyah !== null ? (
-            <>
-              <AyahStar n={selectedAyah} size={48} />
-              <p className="reader__text" lang="ar">
-                {textOf(selectedAyah)}
-              </p>
-              <button
-                type="button"
-                className="reader__close"
-                aria-label="إلغاء التحديد"
-                onClick={() => setSelectedAyah(null)}
-              >
-                ×
-              </button>
-            </>
-          ) : (
-            <p className="reader__placeholder">اضغط رقم أيّ آية لقراءتها، ثم ضعها في محور.</p>
-          )}
-        </div>
-      </div>
+      {/* Tapping an ayah shows its text in a card anchored right above it. */}
+      {selectedAyah !== null && (
+        <AyahReader
+          n={selectedAyah}
+          text={textOf(selectedAyah)}
+          onClose={() => setSelectedAyah(null)}
+        />
+      )}
 
       {/* Mind-map: drag the surah-theme root and each محور; the lines follow */}
       <section className="mindmap-wrap" aria-label="خريطة المحاور">

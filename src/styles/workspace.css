@@ -287,16 +287,17 @@
 .chip:active {
   cursor: grabbing;
 }
-.chip .ayah-star__seal {
-  transition: stroke 0.15s ease;
+.chip .ayah-star__ring,
+.chip .ayah-star__dot {
+  transition: stroke 0.15s ease, fill 0.15s ease;
 }
-.chip:hover .ayah-star__seal {
+.chip:hover .ayah-star__ring {
   stroke: var(--brass);
 }
-.chip--selected .ayah-star__seal {
+.chip--selected .ayah-star__ring {
   stroke: var(--teal-bright);
-  stroke-width: 5;
 }
+.chip--selected .ayah-star__dot,
 .chip--selected .ayah-star__num {
   fill: var(--teal-bright);
 }
@@ -358,23 +359,23 @@
   border-color: var(--danger);
 }
 
-/* ---- Ayah star (khātim) ---- */
-.ayah-star__seal {
+/* ---- Ayah marker (decorated circle) ---- */
+.ayah-star__ring {
   fill: none;
   stroke: var(--brass);
-  stroke-width: 3.5;
-  stroke-linejoin: round;
+  stroke-width: 3;
+}
+.ayah-star__ring--inner {
+  stroke-width: 1.5;
+  opacity: 0.65;
+}
+.ayah-star__dot {
+  fill: var(--brass);
 }
 .ayah-star__num {
   fill: var(--brass);
   font-family: var(--font-ui);
   font-weight: 600;
-}
-.chip--selected .ayah-star__seal {
-  stroke: var(--teal-bright);
-}
-.chip--selected .ayah-star__num {
-  fill: var(--teal-bright);
 }
 
 /* ---- Place-here button (click / keyboard assign) ---- */
@@ -830,4 +831,78 @@
   .vocab-item__sep {
     display: none;
   }
+}
+
+/* ============================================================= *
+ *  Ayah reader popover — text anchored above the tapped ayah    *
+ * ============================================================= */
+.ayah-pop {
+  position: fixed;
+  z-index: 50;
+  width: max-content;
+  max-width: min(380px, 82vw);
+}
+.ayah-pop--top {
+  transform: translate(-50%, calc(-100% - 12px));
+}
+.ayah-pop--bottom {
+  transform: translate(-50%, 12px);
+}
+.ayah-pop__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface-2);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.ayah-pop__card .ayah-star {
+  flex: 0 0 auto;
+}
+.ayah-pop__text {
+  margin: 0;
+  font-family: var(--font-quran);
+  font-size: 1.4rem;
+  line-height: 1.9;
+  color: var(--parchment);
+}
+.ayah-pop__close {
+  flex: 0 0 auto;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  color: var(--parchment-dim);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.ayah-pop__close:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+/* pointer diamond */
+.ayah-pop__card::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--brass-hair);
+  transform: translateX(-50%) rotate(45deg);
+}
+.ayah-pop--top .ayah-pop__card::after {
+  bottom: -7px;
+  border-top: 0;
+  border-left: 0;
+}
+.ayah-pop--bottom .ayah-pop__card::after {
+  top: -7px;
+  border-bottom: 0;
+  border-right: 0;
 }

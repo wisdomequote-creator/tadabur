@@ -1,31 +1,23 @@
 import { toArabicNumerals } from '../lib/numerals'
 
-/** Eight-point star (khātim) — two overlapping squares, the manuscript seal. */
-function buildStarPath(cx: number, cy: number, outer: number, inner: number): string {
-  const points = 8
-  const step = Math.PI / points
-  let d = ''
-  for (let i = 0; i < points * 2; i++) {
-    const r = i % 2 === 0 ? outer : inner
-    const angle = -Math.PI / 2 + i * step
-    const x = cx + r * Math.cos(angle)
-    const y = cy + r * Math.sin(angle)
-    d += `${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)} `
-  }
-  return `${d}Z`
-}
-
-const STAR = buildStarPath(50, 50, 47, 25.5)
-
 interface AyahStarProps {
   n: number
   size?: number
 }
 
+// 8 rosette dots between the two rings.
+const DOTS = Array.from({ length: 8 }, (_, i) => {
+  const a = (Math.PI / 4) * i - Math.PI / 2
+  return [50 + 40.5 * Math.cos(a), 50 + 40.5 * Math.sin(a)] as const
+})
+
+/**
+ * The ayah-number marker — a decorated circle in the manuscript tradition:
+ * a double ring with a ring of small rosette dots, the number in the centre.
+ */
 export default function AyahStar({ n, size = 34 }: AyahStarProps) {
   const label = toArabicNumerals(n)
-  // Keep the numeral inside the star's inner field regardless of digit count.
-  const fontSize = label.length >= 3 ? 25 : label.length === 2 ? 32 : 37
+  const fontSize = label.length >= 3 ? 24 : label.length === 2 ? 30 : 34
   return (
     <svg
       className="ayah-star"
@@ -35,7 +27,11 @@ export default function AyahStar({ n, size = 34 }: AyahStarProps) {
       aria-hidden="true"
       focusable="false"
     >
-      <path d={STAR} className="ayah-star__seal" />
+      <circle cx="50" cy="50" r="46" className="ayah-star__ring" />
+      <circle cx="50" cy="50" r="34.5" className="ayah-star__ring ayah-star__ring--inner" />
+      {DOTS.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="2.3" className="ayah-star__dot" />
+      ))}
       <text
         x="50"
         y="50"
