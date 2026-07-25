@@ -50,6 +50,14 @@ export default function MindMap({
   )
   const [dragging, setDragging] = useState<string | null>(null)
   const [sizes, setSizes] = useState<Record<string, Size>>({})
+  const [zoom, setZoom] = useState(1)
+
+  const clampZoom = (z: number) => Math.min(1.6, Math.max(0.4, Math.round(z * 100) / 100))
+  const clientToCanvas = (clientX: number, clientY: number) => {
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return { x: 0, y: 0 }
+    return { x: (clientX - rect.left) / zoom, y: (clientY - rect.top) / zoom }
+  }
 
   // Measure node sizes so connector lines can anchor to their centers.
   const roRef = useRef<ResizeObserver | null>(null)
@@ -125,13 +133,13 @@ export default function MindMap({
     } catch {
       /* ignore */
     }
-    const rect = canvas.getBoundingClientRect()
+    const p = clientToCanvas(e.clientX, e.clientY)
     const pos = posOf(id)
     const size = sizes[id] ?? { w: 220, h: FALLBACK_AXIS_H }
     dragRef.current = {
       id,
-      offX: e.clientX - rect.left - pos.x,
-      offY: e.clientY - rect.top - pos.y,
+      offX: p.x - pos.x,
+      offY: p.y - pos.y,
       w: size.w,
       h: size.h,
     }
@@ -143,10 +151,10 @@ export default function MindMap({
     const d = dragRef.current
     const canvas = canvasRef.current
     if (!d || !canvas) return
-    const rect = canvas.getBoundingClientRect()
-    // No upper clamp — the canvas grows to fit; keeps nodes on-canvas at 0,0.
-    const x = Math.max(0, e.clientX - rect.left - d.offX)
-    const y = Math.max(0, e.clientY - rect.top - d.offY)
+    // Map the pointer into canvas coordinates (accounting for zoom).
+    const p = clientToCanvas(e.clientX, e.clientY)
+    const x = Math.max(0, p.x - d.offX)
+    const y = Math.max(0, p.y - d.offY)
     onMoveNode(d.id, Math.round(x), Math.round(y))
   }
 
@@ -190,9 +198,9 @@ export default function MindMap({
     const d = resizeRef.current
     const canvas = canvasRef.current
     if (!d || !canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const w = Math.max(170, Math.round(e.clientX - rect.left - d.ax))
-    const h = Math.max(150, Math.round(e.clientY - rect.top - d.ay))
+    const p = clientToCanvas(e.clientX, e.clientY)
+    const w = Math.max(170, Math.round(p.x - d.ax))
+    const h = Math.max(150, Math.round(p.y - d.ay))
     onResizeNode(d.id, w, h)
   }
 
@@ -240,13 +248,50 @@ export default function MindMap({
   }, [state.axes, state.rootX, state.rootY, rootSize.w, rootSize.h, sizes])
 
   return (
-    <div className="mindmap__scroll">
-      <div
-        className={`mindmap${dragging || resizing ? ' mindmap--dragging' : ''}`}
-        ref={canvasRef}
-        style={{ width: canvasW, height: canvasH }}
-      >
-        {/* Connector lines (behind the nodes) */}
+    <div className="mindmap-view">
+      <div className="mindmap__zoom" role="group" aria-label="تكبير وتصغير الخريطة">
+        <button
+          type="button"
+          className="mindmap__zoom-btn"
+          aria-label="تصغير"
+          onClick={() => setZoom((z) => clampZoom(z - 0.1))}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          className="mindmap__zoom-val"
+          title="إعادة الحجم"
+          onClick={() => setZoom(1)}
+        >
+          {Math.round(zoom * 100)}٪
+        </button>
+        <button
+          type="button"
+          className="mindmap__zoom-btn"
+          aria-label="تكبير"
+          onClick={() => setZoom((z) => clampZoom(z + 0.1))}
+        >
+          +
+        </button>
+      </div>
+
+      <div className="mindmap__scroll">
+        <div
+          className="mindmap__sizer"
+          style={{ width: Math.round(canvasW * zoom), height: Math.round(canvasH * zoom) }}
+        >
+          <div
+            className={`mindmap${dragging || resizing ? ' mindmap--dragging' : ''}`}
+            ref={canvasRef}
+            style={{
+              width: canvasW,
+              height: canvasH,
+              transform: `scale(${zoom})`,
+              transformOrigin: '0 0',
+            }}
+          >
+            {/* Connector lines (behind the nodes) */}
         <svg className="mindmap__lines" width={canvasW} height={canvasH} aria-hidden="true">
           {state.axes.map((a) => {
             const endX = a.x + axisW(a) / 2
@@ -319,6 +364,8 @@ export default function MindMap({
             />
           </div>
         ))}
+          </div>
+        </div>
       </div>
     </div>
   )

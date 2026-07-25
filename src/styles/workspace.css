@@ -528,24 +528,80 @@
   color: var(--parchment-faint);
 }
 
+.mindmap-view {
+  position: relative;
+}
 .mindmap__scroll {
   overflow: auto;
   scrollbar-color: var(--brass-dim) transparent;
 }
 
-/* The canvas the nodes live on — sized to fit its content, centered. */
-.mindmap {
+/* The board (sizer) holds the border + dotted grid; it takes the zoomed size. */
+.mindmap__sizer {
   position: relative;
   margin-inline: auto;
+  overflow: hidden;
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background:
     radial-gradient(circle at 1px 1px, rgba(201, 169, 97, 0.08) 1px, transparent 0) 0 0 / 26px 26px;
   background-color: rgba(18, 16, 27, 0.4);
 }
+/* The canvas the nodes live on, scaled by the zoom transform. */
+.mindmap {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 .mindmap--dragging {
   cursor: grabbing;
   user-select: none;
+}
+
+/* Zoom controls (floating, top-left of the map) */
+.mindmap__zoom {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+.mindmap__zoom-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--parchment);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mindmap__zoom-btn:hover {
+  background: var(--surface-3);
+  color: var(--brass);
+}
+.mindmap__zoom-val {
+  min-width: 46px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--parchment-dim);
+  cursor: pointer;
+}
+.mindmap__zoom-val:hover {
+  color: var(--brass);
 }
 
 .mindmap__lines {
