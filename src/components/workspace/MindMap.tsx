@@ -45,6 +45,7 @@ export default function MindMap({
   onSelectAyah,
 }: MindMapProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ id: string; offX: number; offY: number; w: number; h: number } | null>(
     null,
   )
@@ -89,6 +90,24 @@ export default function MindMap({
   }, [])
 
   useEffect(() => () => roRef.current?.disconnect(), [])
+
+  // Trackpad pinch (and Ctrl+wheel) zoom. Browsers report pinch as ctrl+wheel;
+  // the listener is non-passive so it can prevent the browser's page zoom.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return
+      e.preventDefault()
+      // Cap per-event change so a mouse-wheel notch doesn't jump, while
+      // trackpad pinch (many tiny deltas) stays smooth.
+      const step = Math.max(-0.25, Math.min(0.25, -e.deltaY * 0.01))
+      setZoom((z) => clampZoom(z + step))
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Stable callback ref per id, so React only runs it on mount/unmount.
   const getNodeRef = (id: string) => {
@@ -276,7 +295,7 @@ export default function MindMap({
         </button>
       </div>
 
-      <div className="mindmap__scroll">
+      <div className="mindmap__scroll" ref={scrollRef}>
         <div
           className="mindmap__sizer"
           style={{ width: Math.round(canvasW * zoom), height: Math.round(canvasH * zoom) }}
