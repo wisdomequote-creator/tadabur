@@ -4,9 +4,11 @@ import SearchPanel from './SearchPanel'
 interface SearchModalProps {
   open: boolean
   onClose: () => void
+  /** Current surah — enables the "this surah" scope toggle. */
+  surahNumber?: number
 }
 
-export default function SearchModal({ open, onClose }: SearchModalProps) {
+export default function SearchModal({ open, onClose, surahNumber }: SearchModalProps) {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -43,7 +45,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             ×
           </button>
         </header>
-        <SearchPanel autoFocus onNavigate={onClose} />
+        <SearchPanel autoFocus onNavigate={onClose} scopeSurah={surahNumber} />
       </div>
     </div>
   )

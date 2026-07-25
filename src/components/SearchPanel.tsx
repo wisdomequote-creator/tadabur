@@ -32,11 +32,14 @@ interface SearchPanelProps {
   autoFocus?: boolean
   /** Called when a result link is clicked (e.g. to close a modal). */
   onNavigate?: () => void
+  /** When set, offer a "this surah" scope toggle (used inside a surah). */
+  scopeSurah?: number
 }
 
-export default function SearchPanel({ autoFocus, onNavigate }: SearchPanelProps) {
+export default function SearchPanel({ autoFocus, onNavigate, scopeSurah }: SearchPanelProps) {
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState<Index | null>(null)
+  const [mode, setMode] = useState<'surah' | 'all'>(scopeSurah ? 'surah' : 'all')
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -53,14 +56,37 @@ export default function SearchPanel({ autoFocus, onNavigate }: SearchPanelProps)
     if (autoFocus) inputRef.current?.focus()
   }, [autoFocus])
 
+  const scoped = mode === 'surah' && scopeSurah !== undefined
   const q = normalizeArabic(query.trim())
   const matches = useMemo(() => {
     if (!index || q.length < 2) return null
-    return index.entries.filter((e) => e.norm.includes(q))
-  }, [index, q])
+    const base = scoped ? index.entries.filter((e) => e.s === scopeSurah) : index.entries
+    return base.filter((e) => e.norm.includes(q))
+  }, [index, q, scoped, scopeSurah])
 
   return (
     <div className="search-panel">
+      {scopeSurah !== undefined && (
+        <div className="search-modes" role="group" aria-label="نطاق البحث">
+          <button
+            type="button"
+            className={`search-mode${mode === 'surah' ? ' search-mode--active' : ''}`}
+            aria-pressed={mode === 'surah'}
+            onClick={() => setMode('surah')}
+          >
+            هذه السورة
+          </button>
+          <button
+            type="button"
+            className={`search-mode${mode === 'all' ? ' search-mode--active' : ''}`}
+            aria-pressed={mode === 'all'}
+            onClick={() => setMode('all')}
+          >
+            القرآن كله
+          </button>
+        </div>
+      )}
+
       <input
         ref={inputRef}
         type="search"
@@ -75,13 +101,19 @@ export default function SearchPanel({ autoFocus, onNavigate }: SearchPanelProps)
         {!index ? (
           <p className="search-status">…جارٍ تحميل فهرس القرآن الكريم</p>
         ) : q.length < 2 ? (
-          <p className="search-status">اكتب كلمةً (حرفين فأكثر) لتظهر كل الآيات التي وردت فيها.</p>
+          <p className="search-status">
+            اكتب كلمةً (حرفين فأكثر) لتظهر الآيات التي وردت فيها
+            {scoped ? ' في هذه السورة' : ' في القرآن كله'}.
+          </p>
         ) : matches && matches.length === 0 ? (
-          <p className="search-status">لا توجد آيات تحتوي هذه الكلمة.</p>
+          <p className="search-status">
+            لا توجد آيات تحتوي هذه الكلمة{scoped ? ' في هذه السورة' : ''}.
+          </p>
         ) : matches ? (
           <>
             <p className="search-count eyebrow">
               وُجدت {toArabicNumerals(matches.length)} آية
+              {scoped ? ' في هذه السورة' : ''}
               {matches.length > MAX_RENDER ? ` — تُعرض أول ${toArabicNumerals(MAX_RENDER)}` : ''}
             </p>
             <ul className="search-results">
@@ -90,7 +122,9 @@ export default function SearchPanel({ autoFocus, onNavigate }: SearchPanelProps)
                   <Link to={`/surah/${e.s}`} className="search-result" onClick={onNavigate}>
                     <span className="search-result__meta">
                       <AyahStar n={e.n} size={30} />
-                      <span className="search-result__surah">{index.names[e.s]}</span>
+                      {!scoped && (
+                        <span className="search-result__surah">{index.names[e.s]}</span>
+                      )}
                     </span>
                     <span className="search-result__text" lang="ar">
                       {highlight(e.text, q)}

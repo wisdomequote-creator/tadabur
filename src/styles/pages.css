@@ -386,3 +386,31 @@
     padding: 0.8rem;
   }
 }
+
+/* ---- Search scope toggle (this surah / whole Quran) ---- */
+.search-modes {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-bottom: 0.9rem;
+  padding: 0.25rem;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+.search-mode {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--parchment-dim);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.search-mode:hover {
+  color: var(--parchment);
+}
+.search-mode--active {
+  background: var(--brass);
+  color: var(--ground);
+}

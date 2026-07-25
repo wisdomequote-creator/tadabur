@@ -202,7 +202,11 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
         <span>بحث في القرآن</span>
       </button>
 
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        surahNumber={surah.number}
+      />
     </div>
   )
 }
