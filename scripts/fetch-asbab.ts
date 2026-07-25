@@ -59,24 +59,54 @@ const NO_BRACKET_OVERRIDES: Record<number, { from: number; to: number }> = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-function pageUrl(surah: number, page: number): string {
-  return `https://www.altafsir.com/AsbabAlnuzol.asp?SoraName=${surah}&Ayah=0&MyPageNo=${page}&search=yes&img=A&LanguageID=1`
+// LanguageID=1 → Arabic (windows-1256); LanguageID=2 → English (Guezzou translation).
+function pageUrl(surah: number, page: number, lang: 1 | 2 = 1): string {
+  return `https://www.altafsir.com/AsbabAlnuzol.asp?SoraName=${surah}&Ayah=0&MyPageNo=${page}&search=yes&img=A&LanguageID=${lang}`
 }
 
-async function fetchPage(surah: number, page: number): Promise<string> {
-  const url = pageUrl(surah, page)
+async function fetchPage(surah: number, page: number, lang: 1 | 2 = 1): Promise<string> {
+  const url = pageUrl(surah, page, lang)
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const res = await fetch(url, { headers: { 'User-Agent': UA } })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const buf = Buffer.from(await res.arrayBuffer())
-      return iconv.decode(buf, 'windows-1256')
+      // We only read numeric ayah refs from the English pages, so latin1 is fine.
+      return lang === 1 ? iconv.decode(buf, 'windows-1256') : buf.toString('latin1')
     } catch (err) {
       if (attempt === 3) throw err
       await sleep(DELAY_MS * attempt * 2)
     }
   }
   return ''
+}
+
+/**
+ * The English al-Wāḥidī (same book, Guezzou's translation) brackets each
+ * narration with an explicit `[surah:from-to]` verse span, whereas the Arabic
+ * digitisation often labels only the opening ayah. We fetch those English spans
+ * purely to WIDEN Arabic entries: for an Arabic narration that starts on the
+ * same ayah, we extend its end to the English end. We never shrink, and never
+ * import English-only narrations (the English edition has its own errors — e.g.
+ * a surah-17 narration mislabelled into surah 18), so the displayed text stays
+ * exactly the Arabic we scraped. Returns the list of English `{from,to}` spans.
+ */
+async function fetchEnglishSpans(surah: number): Promise<{ from: number; to: number }[]> {
+  const spans: { from: number; to: number }[] = []
+  const ref = new RegExp(`\\[${surah}:(\\d+)(?:-(\\d+))?\\]`)
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const html = await fetchPage(surah, page, 2)
+    const blocks = [...html.matchAll(/<Tafsir>([\s\S]*?)<\/Tafsir>/gi)]
+      .map((m) => (m[1] ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+      .filter((t) => t.length > 25)
+    await sleep(DELAY_MS)
+    if (blocks.length === 0) break
+    for (const b of blocks) {
+      const m = b.match(ref)
+      if (m) spans.push({ from: Number(m[1]), to: m[2] ? Number(m[2]) : Number(m[1]) })
+    }
+  }
+  return spans
 }
 
 function decodeEntities(s: string): string {
@@ -199,6 +229,7 @@ async function main() {
   let grandEntries = 0
   let surahsWithAsbab = 0
   const warnings: string[] = []
+  const widened: string[] = []
 
   for (let s = start; s <= end; s++) {
     const entries: Entry[] = []
@@ -242,6 +273,22 @@ async function main() {
       }
     }
 
+    // Widen ranges against the English edition's explicit spans (see
+    // fetchEnglishSpans). Anchor on the start ayah; only ever extend the end.
+    if (entries.length > 0) {
+      const spans = await fetchEnglishSpans(s)
+      for (const e of entries) {
+        let widenedTo = e.to
+        for (const sp of spans) {
+          if (sp.from === e.from && sp.to > widenedTo) widenedTo = sp.to
+        }
+        if (widenedTo !== e.to) {
+          widened.push(`surah ${s}: [${e.from}${e.to !== e.from ? '-' + e.to : ''}] → [${e.from}-${widenedTo}]`)
+          e.to = widenedTo
+        }
+      }
+    }
+
     // Sort by ayah, keep source order within the same ayah (multiple narrations).
     entries.sort((a, b) => a.from - b.from || a.to - b.to)
 
@@ -258,6 +305,10 @@ async function main() {
   console.log(
     `\n✓ fetch-asbab: ${surahsWithAsbab} surah(s) with asbab, ${grandEntries} narrations total.`,
   )
+  if (widened.length) {
+    console.log(`\n↔ ${widened.length} range(s) widened from the English edition:`)
+    for (const w of widened) console.log(`   - ${w}`)
+  }
   if (warnings.length) {
     console.log(`\n⚠ ${warnings.length} note(s):`)
     for (const w of warnings.slice(0, 40)) console.log(`   - ${w}`)
