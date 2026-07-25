@@ -4,6 +4,7 @@ import type { SurahData } from '../lib/types'
 import { toArabicNumerals } from '../lib/numerals'
 import { SITE_URL } from '../lib/constants'
 import AyahStar from '../components/AyahStar'
+import AsbabSection from '../components/AsbabSection'
 import SurahWorkspace from '../components/workspace/SurahWorkspace'
 
 function revelationLabel(r: SurahData['revelation']): string {
@@ -61,6 +62,8 @@ export function Component() {
             </p>
           </details>
         </div>
+
+        <AsbabSection asbab={surah.asbab} />
 
         <SurahWorkspace key={surah.number} surah={surah} />
       </article>

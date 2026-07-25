@@ -8,6 +8,7 @@ import {
 import { clearState, loadState, saveState } from '../../lib/workspace/storage'
 import { buildExportText, downloadText } from '../../lib/workspace/exportText'
 import AyahReader from '../AyahReader'
+import { asbabForAyah } from '../../lib/asbab'
 import SearchModal from '../SearchModal'
 import MindMap from './MindMap'
 import AyahBank from './AyahBank'
@@ -106,6 +107,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
         <AyahReader
           n={selectedAyah}
           text={textOf(selectedAyah)}
+          asbab={asbabForAyah(surah.asbab, selectedAyah)}
           onClose={() => setSelectedAyah(null)}
         />
       )}

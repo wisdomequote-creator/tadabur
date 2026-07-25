@@ -5,6 +5,19 @@ export interface Ayah {
 
 export type Revelation = 'meccan' | 'medinan'
 
+/**
+ * One سبب نزول (occasion of revelation) narration, mapped to the ayah or ayah
+ * range it concerns. Source: أسباب النزول للإمام الواحدي (altafsir.com).
+ */
+export interface AsbabEntry {
+  /** First ayah this narration concerns. */
+  from: number
+  /** Last ayah (equals `from` for a single ayah). */
+  to: number
+  /** The narration text (Arabic). */
+  text: string
+}
+
 /** Full per-surah payload, code-split into its own chunk. */
 export interface SurahData {
   number: number
@@ -14,6 +27,8 @@ export interface SurahData {
   revelation: Revelation
   ayahCount: number
   ayat: Ayah[]
+  /** أسباب النزول for this surah, ordered by ayah (may be empty). */
+  asbab: AsbabEntry[]
 }
 
 /** Lightweight entry for the index grid — no ayah text. */

@@ -14,9 +14,10 @@ export interface SearchEntry {
 
 // Eager glob: all surah JSON is bundled into THIS chunk, which the search page
 // loads on demand. Other routes never pull it in.
-const modules = import.meta.glob<{ default: SurahData }>('./surahs/*.json', {
-  eager: true,
-})
+const modules = import.meta.glob<{ default: Omit<SurahData, 'asbab'> }>(
+  './surahs/*.json',
+  { eager: true },
+)
 
 export const surahNames: Record<number, string> = {}
 export const searchEntries: SearchEntry[] = []

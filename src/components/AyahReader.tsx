@@ -2,10 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import AyahStar from './AyahStar'
 import { toArabicNumerals } from '../lib/numerals'
+import type { AsbabEntry } from '../lib/types'
+import { ayahRangeLabel, revealAsbab } from '../lib/asbab'
 
 interface AyahReaderProps {
   n: number
   text: string
+  /** أسباب النزول that concern this ayah (may be empty). */
+  asbab?: AsbabEntry[]
   onClose: () => void
 }
 
@@ -20,7 +24,7 @@ interface Pos {
  * ayah marker (or below it, near the top of the page), following it on scroll —
  * so the text always appears right where you pressed.
  */
-export default function AyahReader({ n, text, onClose }: AyahReaderProps) {
+export default function AyahReader({ n, text, asbab = [], onClose }: AyahReaderProps) {
   const [pos, setPos] = useState<Pos | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -80,6 +84,25 @@ export default function AyahReader({ n, text, onClose }: AyahReaderProps) {
         <p className="ayah-pop__text" lang="ar">
           {text}
         </p>
+        {asbab.length > 0 && (
+          <button
+            type="button"
+            className="ayah-pop__asbab"
+            onClick={() => {
+              const target = asbab[0]
+              if (target) revealAsbab(target.from)
+              onClose()
+            }}
+          >
+            سبب النزول
+            {asbab[0] && (asbab[0].from !== n || asbab[0].to !== n) ? (
+              <span className="ayah-pop__asbab-scope">
+                {' '}
+                · {ayahRangeLabel(asbab[0])}
+              </span>
+            ) : null}
+          </button>
+        )}
         <button
           type="button"
           className="ayah-pop__close"
