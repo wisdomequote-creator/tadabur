@@ -724,3 +724,110 @@
 .qa-item__a::placeholder {
   color: var(--parchment-faint);
 }
+
+/* ============================================================= *
+ *  Vocabulary — مفردات (word + meaning)                        *
+ * ============================================================= */
+.vocab {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--hairline);
+}
+.vocab__bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+.vocab__hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--parchment-dim);
+}
+.vocab__empty {
+  margin: 0;
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--parchment-faint);
+}
+.vocab__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+.vocab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.7rem;
+}
+.vocab-item__word {
+  flex: 0 0 34%;
+  min-width: 0;
+  font-family: var(--font-quran);
+  font-size: 1.25rem;
+  color: var(--brass);
+  background: transparent;
+  border: 0;
+  padding: 0.3rem 0.2rem;
+}
+.vocab-item__word:focus {
+  outline: none;
+}
+.vocab-item__sep {
+  color: var(--brass-dim);
+  flex: 0 0 auto;
+}
+.vocab-item__meaning {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--parchment);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 0.3rem 0.2rem;
+}
+.vocab-item__meaning:focus {
+  outline: none;
+  border-bottom-color: var(--brass-hair);
+}
+.vocab-item__word::placeholder,
+.vocab-item__meaning::placeholder {
+  color: var(--parchment-faint);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+}
+.vocab-item__delete {
+  flex: 0 0 auto;
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--parchment-faint);
+  border-radius: var(--radius);
+  transition: color 0.15s ease;
+}
+.vocab-item__delete:hover {
+  color: var(--danger);
+}
+
+@media (max-width: 560px) {
+  .vocab-item {
+    flex-wrap: wrap;
+  }
+  .vocab-item__word {
+    flex-basis: 100%;
+  }
+  .vocab-item__sep {
+    display: none;
+  }
+}

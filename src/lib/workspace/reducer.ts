@@ -1,4 +1,4 @@
-import type { Axis, QAItem, SurahData, WorkspaceState } from '../types'
+import type { Axis, QAItem, SurahData, VocabItem, WorkspaceState } from '../types'
 
 // ---- Canvas layout ------------------------------------------------------
 // Nodes are positioned in a fixed coordinate space (px). The canvas element is
@@ -29,6 +29,9 @@ export type WorkspaceAction =
   | { type: 'addQuestion' }
   | { type: 'deleteQuestion'; id: string }
   | { type: 'setQuestion'; id: string; field: 'q' | 'a'; value: string }
+  | { type: 'addVocab' }
+  | { type: 'deleteVocab'; id: string }
+  | { type: 'setVocab'; id: string; field: 'word' | 'meaning'; value: string }
   | { type: 'reset'; ayahCount: number }
 
 const sortNums = (nums: number[]): number[] => [...nums].sort((a, b) => a - b)
@@ -42,6 +45,7 @@ const emptyAxis = (id: string, index: number): Axis => ({
 })
 
 const emptyQuestion = (id: string): QAItem => ({ id, q: '', a: '' })
+const emptyVocab = (id: string): VocabItem => ({ id, word: '', meaning: '' })
 
 export function initWorkspace(surah: SurahData): WorkspaceState {
   return {
@@ -54,6 +58,8 @@ export function initWorkspace(surah: SurahData): WorkspaceState {
     nextAxisId: 4,
     questions: [emptyQuestion('q-1')],
     nextQuestionId: 2,
+    vocab: [emptyVocab('v-1')],
+    nextVocabId: 2,
   }
 }
 
@@ -74,6 +80,8 @@ export function normalizeState(s: WorkspaceState): WorkspaceState {
     })),
     questions: hasQuestions ? s.questions : [emptyQuestion('q-1')],
     nextQuestionId: num(s.nextQuestionId, hasQuestions ? s.questions.length + 1 : 2),
+    vocab: Array.isArray(s.vocab) ? s.vocab : [emptyVocab('v-1')],
+    nextVocabId: num(s.nextVocabId, Array.isArray(s.vocab) ? s.vocab.length + 1 : 2),
   }
 }
 
@@ -182,6 +190,27 @@ export function workspaceReducer(
         ),
       }
 
+    case 'addVocab':
+      return {
+        ...state,
+        vocab: [...state.vocab, emptyVocab(`v-${state.nextVocabId}`)],
+        nextVocabId: state.nextVocabId + 1,
+      }
+
+    case 'deleteVocab':
+      return {
+        ...state,
+        vocab: state.vocab.filter((item) => item.id !== action.id),
+      }
+
+    case 'setVocab':
+      return {
+        ...state,
+        vocab: state.vocab.map((item) =>
+          item.id === action.id ? { ...item, [action.field]: action.value } : item,
+        ),
+      }
+
     case 'reset':
       return {
         surahNumber: state.surahNumber,
@@ -193,6 +222,8 @@ export function workspaceReducer(
         nextAxisId: 4,
         questions: [emptyQuestion('q-1')],
         nextQuestionId: 2,
+        vocab: [emptyVocab('v-1')],
+        nextVocabId: 2,
       }
 
     default:

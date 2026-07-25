@@ -38,6 +38,9 @@ export default function Layout() {
             <NavLink to="/surahs" className="site-nav__link">
               السور
             </NavLink>
+            <NavLink to="/search" className="site-nav__link">
+              بحث
+            </NavLink>
           </nav>
         </div>
       </header>

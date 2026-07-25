@@ -44,6 +44,13 @@ export interface QAItem {
   a: string
 }
 
+/** A word from the surah and its meaning. */
+export interface VocabItem {
+  id: string
+  word: string
+  meaning: string
+}
+
 export interface WorkspaceState {
   surahNumber: number
   surahTheme: string
@@ -58,4 +65,7 @@ export interface WorkspaceState {
   /** Tadabur questions with their answers. */
   questions: QAItem[]
   nextQuestionId: number
+  /** Words from the surah with their meanings. */
+  vocab: VocabItem[]
+  nextVocabId: number
 }

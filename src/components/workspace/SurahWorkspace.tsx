@@ -8,9 +8,11 @@ import {
 import { clearState, loadState, saveState } from '../../lib/workspace/storage'
 import { buildExportText, downloadText } from '../../lib/workspace/exportText'
 import AyahStar from '../AyahStar'
+import SearchModal from '../SearchModal'
 import MindMap from './MindMap'
 import AyahBank from './AyahBank'
 import QuestionsSection from './QuestionsSection'
+import VocabSection from './VocabSection'
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
 
@@ -18,6 +20,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
   const [state, dispatch] = useReducer(workspaceReducer, surah, initWorkspace)
   const [selectedAyah, setSelectedAyah] = useState<number | null>(null)
   const [status, setStatus] = useState<SaveStatus>('idle')
+  const [searchOpen, setSearchOpen] = useState(false)
   const hydrated = useRef(false)
 
   // Hydrate from localStorage once, client-side only.
@@ -175,6 +178,14 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
           onSet={(id, field, value) => dispatch({ type: 'setQuestion', id, field, value })}
         />
 
+        {/* Vocabulary — word + meaning */}
+        <VocabSection
+          vocab={state.vocab}
+          onAdd={() => dispatch({ type: 'addVocab' })}
+          onDelete={(id) => dispatch({ type: 'deleteVocab', id })}
+          onSet={(id, field, value) => dispatch({ type: 'setVocab', id, field, value })}
+        />
+
         {/* Actions */}
         <div className="workspace-actions">
           <div className="workspace-actions__stat eyebrow">
@@ -190,6 +201,22 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
           </div>
         </div>
       </div>
+
+      {/* Search the whole Quran without leaving your tadabur */}
+      <button
+        type="button"
+        className="search-fab"
+        onClick={() => setSearchOpen(true)}
+        aria-label="بحث في القرآن كله"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
+          <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        <span>بحث في القرآن</span>
+      </button>
+
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }

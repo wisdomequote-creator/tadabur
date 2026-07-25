@@ -55,6 +55,16 @@ export function buildExportText(surah: SurahData, state: WorkspaceState): string
     })
   }
 
+  const vocab = state.vocab.filter((v) => v.word.trim() || v.meaning.trim())
+  if (vocab.length > 0) {
+    L.push('مفردات:')
+    L.push('─'.repeat(30))
+    for (const item of vocab) {
+      L.push(`  ${item.word.trim() || '(كلمة)'} : ${item.meaning.trim()}`)
+    }
+    L.push('')
+  }
+
   L.push('═'.repeat(40))
   L.push('أُنشئ بمساعدة «تدبر»')
 

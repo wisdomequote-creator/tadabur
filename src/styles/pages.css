@@ -221,3 +221,168 @@
   font-size: 2rem;
   margin: 0.5rem 0 1rem;
 }
+
+/* ---- Quran-wide word search ---- */
+.search-head {
+  padding-block: 2.5rem 1.25rem;
+}
+.search-head__title {
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  margin: 0.5rem 0 1.4rem;
+}
+.search-body {
+  padding-bottom: 3rem;
+}
+.search-status {
+  padding: 1.5rem 0;
+  color: var(--parchment-faint);
+}
+.search-count {
+  color: var(--brass);
+  margin-bottom: 1rem;
+}
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.search-result {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-right: 2px solid var(--brass-hair);
+  border-radius: var(--radius);
+  color: var(--parchment);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.search-result:hover {
+  border-right-color: var(--brass);
+  background: var(--surface-2);
+  color: var(--parchment);
+}
+.search-result__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 0 0 auto;
+  min-width: 8.5rem;
+}
+.search-result__surah {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--brass);
+}
+.search-result__text {
+  font-family: var(--font-quran);
+  font-size: 1.5rem;
+  line-height: 2;
+  color: var(--parchment);
+}
+.search-hl {
+  background: var(--brass-faint);
+  color: var(--brass);
+  border-radius: 2px;
+  padding: 0 0.1em;
+}
+
+@media (max-width: 640px) {
+  .search-result {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .search-result__text {
+    font-size: 1.3rem;
+  }
+}
+
+/* ---- Search: floating button (surah page) + modal ---- */
+.search-fab {
+  position: fixed;
+  inset-block-end: 1.5rem;
+  inset-inline-start: 1.5rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ground);
+  background: var(--brass);
+  border: 1px solid var(--brass);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.search-fab:hover {
+  background: var(--brass-dim);
+  transform: translateY(-1px);
+}
+
+.search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4vh 1rem 1rem;
+  background: rgba(10, 9, 15, 0.72);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+.search-modal__panel {
+  width: 100%;
+  max-width: 760px;
+  background: var(--surface-1);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem 1.6rem;
+}
+.search-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+.search-modal__close {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--parchment-dim);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.search-modal__close:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+/* the panel's results scroll within the modal */
+.search-modal .search-body {
+  max-height: 62vh;
+  overflow-y: auto;
+  padding-bottom: 0;
+  scrollbar-color: var(--brass-dim) transparent;
+}
+.search-panel .index-search {
+  max-width: none;
+}
+
+@media (max-width: 640px) {
+  .search-fab span {
+    display: none;
+  }
+  .search-fab {
+    padding: 0.8rem;
+  }
+}
