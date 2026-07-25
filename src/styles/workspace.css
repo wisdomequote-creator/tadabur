@@ -953,8 +953,8 @@
  * ============================================================= */
 .workspace-split {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 1.25rem;
   align-items: start;
   margin-bottom: 2.5rem;
 }
@@ -964,6 +964,24 @@
   max-height: calc(100vh - 96px);
   overflow-y: auto;
   scrollbar-color: var(--brass-dim) transparent;
+}
+/* compact bank in the narrow sidebar */
+.workspace-split__bank .bank {
+  padding: 0.85rem;
+}
+.workspace-split__bank .bank__hint {
+  font-size: 0.78rem;
+}
+.workspace-split__bank .bank__ranges {
+  gap: 0.3rem;
+}
+.workspace-split__bank .range-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+.workspace-split__bank .bank__strip {
+  gap: 0.4rem;
+  justify-content: center;
 }
 .workspace-split__map {
   min-width: 0;

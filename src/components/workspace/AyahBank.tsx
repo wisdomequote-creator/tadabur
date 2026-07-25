@@ -108,7 +108,7 @@ export default function AyahBank({
               n={n}
               text={textOf(n)}
               selected={selectedAyah === n}
-              size={46}
+              size={42}
               onSelect={onSelectAyah}
             />
           ))}
