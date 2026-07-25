@@ -110,52 +110,56 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
         />
       )}
 
-      {/* Mind-map: drag the surah-theme root and each محور; the lines follow */}
-      <section className="mindmap-wrap" aria-label="خريطة المحاور">
-        <div className="container mindmap-wrap__bar">
-          <span className="eyebrow">خريطة المحاور</span>
-          <div className="mindmap-wrap__meta">
-            <span className="mindmap-hint">اسحب رأس المحور «⠿» لتحريكه</span>
-            <span className="save-indicator" aria-live="polite">
-              {status === 'saved' ? '✓ حُفظ' : status === 'saving' ? '…يُحفظ' : ''}
-            </span>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => dispatch({ type: 'addAxis' })}
-            >
-              + محور جديد
-            </button>
+      {/* Ayah bank (right sidebar) + mind-map of topics & surah subject (left) */}
+      <div className="container workspace-split">
+        <aside className="workspace-split__bank">
+          <AyahBank
+            bank={state.bank}
+            ayahCount={surah.ayahCount}
+            textOf={textOf}
+            selectedAyah={selectedAyah}
+            selectionAssigned={selectionAssigned}
+            onSelectAyah={toggleSelect}
+            onReturnToBank={returnToBank}
+          />
+        </aside>
+
+        <section className="workspace-split__map" aria-label="خريطة المحاور">
+          <div className="mindmap-wrap__bar">
+            <span className="eyebrow">خريطة المحاور</span>
+            <div className="mindmap-wrap__meta">
+              <span className="mindmap-hint">اسحب رأس المحور «⠿» لتحريكه</span>
+              <span className="save-indicator" aria-live="polite">
+                {status === 'saved' ? '✓ حُفظ' : status === 'saving' ? '…يُحفظ' : ''}
+              </span>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => dispatch({ type: 'addAxis' })}
+              >
+                + محور جديد
+              </button>
+            </div>
           </div>
-        </div>
 
-        <MindMap
-          state={state}
-          textOf={textOf}
-          selectedAyah={selectedAyah}
-          onMoveNode={(id, x, y) => dispatch({ type: 'moveNode', id, x, y })}
-          onResizeNode={(id, w, h) => dispatch({ type: 'resizeNode', id, w, h })}
-          onSetTheme={(value) => dispatch({ type: 'setSurahTheme', value })}
-          onSetAxisTitle={(id, value) => dispatch({ type: 'setAxisTitle', axisId: id, value })}
-          onSetAxisNotes={(id, value) => dispatch({ type: 'setAxisNotes', axisId: id, value })}
-          onPlaceHere={placeInAxis}
-          onDelete={handleDeleteAxis}
-          onSelectAyah={toggleSelect}
-        />
-      </section>
+          <MindMap
+            state={state}
+            textOf={textOf}
+            selectedAyah={selectedAyah}
+            onMoveNode={(id, x, y) => dispatch({ type: 'moveNode', id, x, y })}
+            onResizeNode={(id, w, h) => dispatch({ type: 'resizeNode', id, w, h })}
+            onSetTheme={(value) => dispatch({ type: 'setSurahTheme', value })}
+            onSetAxisTitle={(id, value) => dispatch({ type: 'setAxisTitle', axisId: id, value })}
+            onSetAxisNotes={(id, value) => dispatch({ type: 'setAxisNotes', axisId: id, value })}
+            onPlaceHere={placeInAxis}
+            onDelete={handleDeleteAxis}
+            onSelectAyah={toggleSelect}
+          />
+        </section>
+      </div>
 
-      {/* Bank */}
+      {/* Questions, vocabulary, actions — full width below */}
       <div className="container">
-        <AyahBank
-          bank={state.bank}
-          ayahCount={surah.ayahCount}
-          textOf={textOf}
-          selectedAyah={selectedAyah}
-          selectionAssigned={selectionAssigned}
-          onSelectAyah={toggleSelect}
-          onReturnToBank={returnToBank}
-        />
-
         {/* Questions & answers — the core of tadabur */}
         <QuestionsSection
           questions={state.questions}

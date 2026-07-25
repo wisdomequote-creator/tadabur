@@ -947,3 +947,50 @@
   border-bottom: 0;
   border-right: 0;
 }
+
+/* ============================================================= *
+ *  Workspace split — ayah bank (right) beside the mind-map      *
+ * ============================================================= */
+.workspace-split {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 2.5rem;
+}
+.workspace-split__bank {
+  position: sticky;
+  top: 78px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  scrollbar-color: var(--brass-dim) transparent;
+}
+.workspace-split__map {
+  min-width: 0;
+}
+/* the map's toolbar is now inside its column, not a full-width container */
+.workspace-split__map .mindmap-wrap__bar {
+  margin-bottom: 0.75rem;
+}
+/* the bank fits the narrow sidebar */
+.workspace-split__bank .bank__head {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.workspace-split__bank .bank__head .place-btn {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .workspace-split {
+    grid-template-columns: 1fr;
+  }
+  .workspace-split__bank {
+    position: static;
+    max-height: none;
+    order: 2;
+  }
+  .workspace-split__map {
+    order: 1;
+  }
+}
