@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { WorkspaceState } from '../../lib/types'
-import { CANVAS_W, ROOT_W } from '../../lib/workspace/reducer'
+import { ROOT_W } from '../../lib/workspace/reducer'
 import AxisColumn from './AxisColumn'
 
 interface Size {
@@ -14,6 +14,7 @@ interface MindMapProps {
   textOf: (n: number) => string
   selectedAyah: number | null
   onMoveNode: (id: string, x: number, y: number) => void
+  onResizeNode: (id: string, w: number, h: number) => void
   onSetTheme: (value: string) => void
   onSetAxisTitle: (axisId: string, value: string) => void
   onSetAxisNotes: (axisId: string, value: string) => void
@@ -35,6 +36,7 @@ export default function MindMap({
   textOf,
   selectedAyah,
   onMoveNode,
+  onResizeNode,
   onSetTheme,
   onSetAxisTitle,
   onSetAxisNotes,
@@ -142,10 +144,9 @@ export default function MindMap({
     const canvas = canvasRef.current
     if (!d || !canvas) return
     const rect = canvas.getBoundingClientRect()
-    let x = e.clientX - rect.left - d.offX
-    let y = e.clientY - rect.top - d.offY
-    x = Math.max(0, Math.min(x, CANVAS_W - d.w))
-    y = Math.max(0, y)
+    // No upper clamp — the canvas grows to fit; keeps nodes on-canvas at 0,0.
+    const x = Math.max(0, e.clientX - rect.left - d.offX)
+    const y = Math.max(0, e.clientY - rect.top - d.offY)
     onMoveNode(d.id, Math.round(x), Math.round(y))
   }
 
@@ -167,33 +168,88 @@ export default function MindMap({
     onPointerUp: dragEnd,
   })
 
-  const rootSize = sizes.root ?? { w: ROOT_W, h: FALLBACK_ROOT_H }
+  // ---- Resize (drag a node's corner) --------------------------------------
+  const resizeRef = useRef<{ id: string; ax: number; ay: number } | null>(null)
+  const [resizing, setResizing] = useState<string | null>(null)
+
+  function startResize(id: string, e: ReactPointerEvent) {
+    if (!canvasRef.current) return
+    e.stopPropagation()
+    try {
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    } catch {
+      /* ignore */
+    }
+    const pos = posOf(id)
+    resizeRef.current = { id, ax: pos.x, ay: pos.y }
+    setResizing(id)
+    e.preventDefault()
+  }
+
+  function resizeMove(e: ReactPointerEvent) {
+    const d = resizeRef.current
+    const canvas = canvasRef.current
+    if (!d || !canvas) return
+    const rect = canvas.getBoundingClientRect()
+    const w = Math.max(170, Math.round(e.clientX - rect.left - d.ax))
+    const h = Math.max(150, Math.round(e.clientY - rect.top - d.ay))
+    onResizeNode(d.id, w, h)
+  }
+
+  function resizeEnd(e: ReactPointerEvent) {
+    if (resizeRef.current) {
+      resizeRef.current = null
+      setResizing(null)
+    }
+    try {
+      ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const resizeProps = (id: string) => ({
+    onPointerDown: (e: ReactPointerEvent) => startResize(id, e),
+    onPointerMove: resizeMove,
+    onPointerUp: resizeEnd,
+  })
+
+  const axisW = (a: (typeof state.axes)[number]) => a.w ?? nodeWidth(a.ayat.length)
+  const rootW = state.rootW ?? ROOT_W
+
+  const rootSize = sizes.root ?? { w: rootW, h: FALLBACK_ROOT_H }
 
   // Lines flow from the root's bottom-middle to each group's top-middle.
   const startX = state.rootX + rootSize.w / 2
   const startY = state.rootY + rootSize.h
 
-  const canvasH = useMemo(() => {
+  // Canvas fits its content plus a margin to drag into (no huge fixed board).
+  const { canvasW, canvasH } = useMemo(() => {
+    let maxRight = state.rootX + rootSize.w
     let maxBottom = state.rootY + rootSize.h
     for (const a of state.axes) {
-      const h = sizes[a.id]?.h ?? FALLBACK_AXIS_H
+      const w = a.w ?? sizes[a.id]?.w ?? nodeWidth(a.ayat.length)
+      const h = a.h ?? sizes[a.id]?.h ?? FALLBACK_AXIS_H
+      maxRight = Math.max(maxRight, a.x + w)
       maxBottom = Math.max(maxBottom, a.y + h)
     }
-    return Math.max(560, Math.round(maxBottom + 48))
-  }, [state.axes, state.rootY, rootSize.h, sizes])
+    return {
+      canvasW: Math.max(480, Math.round(maxRight + 120)),
+      canvasH: Math.max(360, Math.round(maxBottom + 80)),
+    }
+  }, [state.axes, state.rootX, state.rootY, rootSize.w, rootSize.h, sizes])
 
   return (
     <div className="mindmap__scroll">
       <div
-        className={`mindmap${dragging ? ' mindmap--dragging' : ''}`}
+        className={`mindmap${dragging || resizing ? ' mindmap--dragging' : ''}`}
         ref={canvasRef}
-        style={{ width: CANVAS_W, height: canvasH }}
+        style={{ width: canvasW, height: canvasH }}
       >
         {/* Connector lines (behind the nodes) */}
-        <svg className="mindmap__lines" width={CANVAS_W} height={canvasH} aria-hidden="true">
+        <svg className="mindmap__lines" width={canvasW} height={canvasH} aria-hidden="true">
           {state.axes.map((a) => {
-            const w = nodeWidth(a.ayat.length)
-            const endX = a.x + w / 2
+            const endX = a.x + axisW(a) / 2
             const endY = a.y
             const midY = (startY + endY) / 2
             const d = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`
@@ -209,9 +265,9 @@ export default function MindMap({
 
         {/* Root node — موضوع السورة */}
         <div
-          className="node node--root"
+          className={`node node--root${state.rootH ? ' node--sized' : ''}`}
           ref={getNodeRef('root')}
-          style={{ left: state.rootX, top: state.rootY, width: ROOT_W }}
+          style={{ left: state.rootX, top: state.rootY, width: rootW, height: state.rootH }}
         >
           <header className="node__handle" {...handleProps('root')}>
             <span className="axis__grip" aria-hidden="true">
@@ -227,15 +283,21 @@ export default function MindMap({
             rows={2}
             onChange={(e) => onSetTheme(e.target.value)}
           />
+          <span
+            className="node__resize"
+            {...resizeProps('root')}
+            aria-hidden="true"
+            title="اسحب لتغيير الحجم"
+          />
         </div>
 
         {/* Axis nodes */}
         {state.axes.map((axis, i) => (
           <div
             key={axis.id}
-            className="node"
+            className={`node${axis.h ? ' node--sized' : ''}`}
             ref={getNodeRef(axis.id)}
-            style={{ left: axis.x, top: axis.y, width: nodeWidth(axis.ayat.length) }}
+            style={{ left: axis.x, top: axis.y, width: axisW(axis), height: axis.h }}
           >
             <AxisColumn
               axis={axis}
@@ -248,6 +310,12 @@ export default function MindMap({
               onPlaceHere={onPlaceHere}
               onDelete={onDelete}
               handleProps={handleProps(axis.id)}
+            />
+            <span
+              className="node__resize"
+              {...resizeProps(axis.id)}
+              aria-hidden="true"
+              title="اسحب لتغيير الحجم"
             />
           </div>
         ))}

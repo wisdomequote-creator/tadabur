@@ -9,12 +9,13 @@ export const ROOT_W = 300
 /** Deterministic default slot for the axis at a given index (no random ⇒ SSR-safe). */
 export function axisSlot(index: number): { x: number; y: number } {
   return {
-    x: 120 + (index % 3) * 320,
-    y: 290 + Math.floor(index / 3) * 250,
+    x: 30 + (index % 3) * 250,
+    y: 250 + Math.floor(index / 3) * 220,
   }
 }
 
-const ROOT_DEFAULT = { x: Math.round((CANVAS_W - ROOT_W) / 2), y: 24 }
+// Root centered over the three default axis slots (span 30 … 30+2*250+~200).
+const ROOT_DEFAULT = { x: 190, y: 20 }
 
 export type WorkspaceAction =
   | { type: 'hydrate'; state: WorkspaceState }
@@ -24,6 +25,7 @@ export type WorkspaceAction =
   | { type: 'setAxisTitle'; axisId: string; value: string }
   | { type: 'setAxisNotes'; axisId: string; value: string }
   | { type: 'moveNode'; id: string; x: number; y: number }
+  | { type: 'resizeNode'; id: string; w: number; h: number }
   | { type: 'moveToAxis'; n: number; axisId: string }
   | { type: 'moveToBank'; n: number }
   | { type: 'addQuestion' }
@@ -149,6 +151,18 @@ export function workspaceReducer(
         ...state,
         axes: state.axes.map((a) =>
           a.id === action.id ? { ...a, x: action.x, y: action.y } : a,
+        ),
+      }
+    }
+
+    case 'resizeNode': {
+      if (action.id === 'root') {
+        return { ...state, rootW: action.w, rootH: action.h }
+      }
+      return {
+        ...state,
+        axes: state.axes.map((a) =>
+          a.id === action.id ? { ...a, w: action.w, h: action.h } : a,
         ),
       }
     }

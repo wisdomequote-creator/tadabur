@@ -134,6 +134,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
           textOf={textOf}
           selectedAyah={selectedAyah}
           onMoveNode={(id, x, y) => dispatch({ type: 'moveNode', id, x, y })}
+          onResizeNode={(id, w, h) => dispatch({ type: 'resizeNode', id, w, h })}
           onSetTheme={(value) => dispatch({ type: 'setSurahTheme', value })}
           onSetAxisTitle={(id, value) => dispatch({ type: 'setAxisTitle', axisId: id, value })}
           onSetAxisNotes={(id, value) => dispatch({ type: 'setAxisNotes', axisId: id, value })}

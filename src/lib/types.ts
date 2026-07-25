@@ -35,6 +35,9 @@ export interface Axis {
   /** Position on the mind-map canvas (px, canvas coordinate space). */
   x: number
   y: number
+  /** Optional user-set size (px); undefined ⇒ auto-size from ayah count. */
+  w?: number
+  h?: number
 }
 
 /** A tadabur question and the answer the user works out for it. */
@@ -57,6 +60,9 @@ export interface WorkspaceState {
   /** Position of the surah-theme (root) node on the canvas. */
   rootX: number
   rootY: number
+  /** Optional user-set size of the root node (px). */
+  rootW?: number
+  rootH?: number
   axes: Axis[]
   /** Not-yet-assigned ayah numbers, kept sorted ascending. */
   bank: number[]
