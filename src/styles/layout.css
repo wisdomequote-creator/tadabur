@@ -18,10 +18,14 @@
   border-bottom: 1px solid var(--hairline);
 }
 .site-header__inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   height: 62px;
+}
+/* brand at the start (right in RTL), nav centered, spacer balances */
+.site-header__spacer {
+  display: block;
 }
 
 .brand {
@@ -45,11 +49,13 @@
 
 .site-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
+  justify-self: center;
 }
 .site-nav__link {
-  font-family: var(--font-ui);
-  font-size: 0.95rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
   color: var(--parchment-dim);
   padding-bottom: 3px;
   border-bottom: 1px solid transparent;
