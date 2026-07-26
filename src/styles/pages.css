@@ -211,6 +211,161 @@
 .surah-reading__ayah .ayah-star {
   vertical-align: middle;
 }
+.surah-reading__tip {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--parchment-faint);
+  margin-inline-start: auto;
+  padding-inline-end: 0.7rem;
+}
+.surah-reading__ayah--flash {
+  background: var(--brass-faint);
+  border-radius: var(--radius);
+  transition: background 0.5s ease;
+}
+
+/* tappable word inside the reading text */
+.qword {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  padding: 0 0.05em;
+  margin: 0;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.qword:hover,
+.qword:focus-visible {
+  background: var(--brass-faint);
+  color: var(--brass);
+  outline: none;
+}
+
+/* word root + concordance modal */
+.word-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6vh 1rem 1rem;
+  background: rgba(10, 9, 15, 0.72);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+.word-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface-1);
+  border: 1px solid var(--brass-hair);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.5rem 1.6rem;
+}
+.word-modal__close {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--parchment-dim);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.word-modal__close:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.word-modal__head {
+  text-align: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.word-modal__word {
+  font-family: var(--font-quran);
+  font-size: 2.4rem;
+  line-height: 1.4;
+  color: var(--parchment);
+  margin: 0 0 0.4rem;
+}
+.word-modal__root {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+}
+.word-modal__root-label {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--parchment-faint);
+}
+.word-modal__root-letters {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--brass);
+  letter-spacing: 0.05em;
+}
+.word-modal__status {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--parchment-dim);
+}
+.word-modal__hint {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--parchment-dim);
+}
+.word-conc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.word-conc__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.8rem;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  color: var(--parchment);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.word-conc__link:hover {
+  border-color: var(--brass-hair);
+  background: var(--surface-3);
+  color: var(--parchment);
+}
+.word-conc__item--here .word-conc__link {
+  border-color: var(--brass-hair);
+  background: var(--brass-faint);
+}
+.word-conc__form {
+  font-family: var(--font-quran);
+  font-size: 1.5rem;
+  color: var(--parchment);
+}
+.word-conc__loc {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  color: var(--parchment-dim);
+  white-space: nowrap;
+}
 
 /* ---- أسباب النزول ---- */
 .asbab {

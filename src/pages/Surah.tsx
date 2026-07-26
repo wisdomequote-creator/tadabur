@@ -3,8 +3,8 @@ import PageHead from '../components/PageHead'
 import type { SurahData } from '../lib/types'
 import { toArabicNumerals } from '../lib/numerals'
 import { SITE_URL } from '../lib/constants'
-import AyahStar from '../components/AyahStar'
 import AsbabSection from '../components/AsbabSection'
+import WordReader from '../components/word/WordReader'
 import SurahWorkspace from '../components/workspace/SurahWorkspace'
 
 function revelationLabel(r: SurahData['revelation']): string {
@@ -46,22 +46,8 @@ export function Component() {
           </div>
         </header>
 
-        {/* Full mushaf text — prerendered into the HTML, collapsible. */}
-        <div className="container">
-          <details className="surah-reading">
-            <summary className="surah-reading__summary">
-              <span className="eyebrow">نصّ السورة كاملًا</span>
-            </summary>
-            <p className="surah-reading__body" lang="ar">
-              {surah.ayat.map((a) => (
-                <span className="surah-reading__ayah" key={a.n}>
-                  {a.text}{' '}
-                  <AyahStar n={a.n} size={30} />{' '}
-                </span>
-              ))}
-            </p>
-          </details>
-        </div>
+        {/* Full mushaf text — prerendered, collapsible, every word tappable. */}
+        <WordReader surah={surah} />
 
         <AsbabSection asbab={surah.asbab} />
 
