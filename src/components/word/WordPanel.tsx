@@ -4,6 +4,7 @@ import { toArabicNumerals } from '../../lib/numerals'
 import { BASMALA_ROOTS, formatRoot, type WordRef } from '../../lib/roots'
 import { surahName } from '../../lib/surahNames'
 import { loadRootIndex, loadSurahRoots, type Occurrence } from '../../data/wordData'
+import { loadSurahTafsir } from '../../data/tafsirData'
 
 interface WordPanelProps {
   surah: number
@@ -21,6 +22,7 @@ interface Resolved {
 export default function WordPanel({ surah, ayah, wordRef, wordText, onClose }: WordPanelProps) {
   const [data, setData] = useState<Resolved | null>(null)
   const [loading, setLoading] = useState(true)
+  const [tafsir, setTafsir] = useState<string | null>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -54,6 +56,17 @@ export default function WordPanel({ surah, ayah, wordRef, wordText, onClose }: W
     }
   }, [surah, ayah, wordRef])
 
+  // The ayah's meaning (التفسير الميسر) — loaded alongside.
+  useEffect(() => {
+    let alive = true
+    loadSurahTafsir(surah).then((ayat) => {
+      if (alive) setTafsir(ayat[ayah - 1] ?? '')
+    })
+    return () => {
+      alive = false
+    }
+  }, [surah, ayah])
+
   const here = (o: Occurrence) => o[0] === surah && o[1] === ayah
 
   return (
@@ -80,6 +93,15 @@ export default function WordPanel({ surah, ayah, wordRef, wordText, onClose }: W
             <p className="word-modal__status">كلمةٌ لا جذر ثلاثيّ لها (حرفٌ أو ضمير).</p>
           )}
         </div>
+
+        {tafsir && (
+          <div className="word-modal__tafsir">
+            <span className="word-modal__tafsir-label">معنى الآية · التفسير الميسر</span>
+            <p className="word-modal__tafsir-text" lang="ar">
+              {tafsir}
+            </p>
+          </div>
+        )}
 
         {data && data.root && (
           <>

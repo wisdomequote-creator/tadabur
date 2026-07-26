@@ -319,6 +319,28 @@
   font-size: 0.9rem;
   color: var(--parchment-dim);
 }
+.word-modal__tafsir {
+  margin-bottom: 1.1rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-right: 2px solid var(--brass-hair);
+  border-radius: var(--radius);
+}
+.word-modal__tafsir-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--brass);
+  margin-bottom: 0.4rem;
+}
+.word-modal__tafsir-text {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1.95;
+  color: var(--parchment);
+}
 .word-modal__hint {
   margin: 0 0 0.9rem;
   font-family: var(--font-ui);
