@@ -1,17 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import AyahStar from './AyahStar'
 import { toArabicNumerals } from '../lib/numerals'
 import { normalizeArabic } from '../lib/arabic'
-import type { SearchEntry } from '../data/searchData'
+import { surahName } from '../lib/surahNames'
+import { searchDocs, type DocKind, type DocResult } from '../lib/search'
 
 const MAX_RENDER = 200
-
-interface Index {
-  entries: SearchEntry[]
-  names: Record<number, string>
-}
 
 /** Highlight whole words whose normalized form contains the query. */
 function highlight(text: string, q: string): ReactNode {
@@ -34,23 +30,18 @@ interface SearchPanelProps {
   onNavigate?: () => void
   /** When set, offer a "this surah" scope toggle (used inside a surah). */
   scopeSurah?: number
+  /** When set, offer an الآيات / التفسير content toggle (the /search page). */
+  allowKinds?: boolean
 }
 
-export default function SearchPanel({ autoFocus, onNavigate, scopeSurah }: SearchPanelProps) {
+export default function SearchPanel({ autoFocus, onNavigate, scopeSurah, allowKinds }: SearchPanelProps) {
   const [query, setQuery] = useState('')
-  const [index, setIndex] = useState<Index | null>(null)
   const [mode, setMode] = useState<'surah' | 'all'>(scopeSurah ? 'surah' : 'all')
+  const [kind, setKind] = useState<DocKind>('ayah')
+  const [results, setResults] = useState<DocResult[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    let alive = true
-    void import('../data/searchData').then((m) => {
-      if (alive) setIndex({ entries: m.searchEntries, names: m.surahNames })
-    })
-    return () => {
-      alive = false
-    }
-  }, [])
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus()
@@ -58,14 +49,61 @@ export default function SearchPanel({ autoFocus, onNavigate, scopeSurah }: Searc
 
   const scoped = mode === 'surah' && scopeSurah !== undefined
   const q = normalizeArabic(query.trim())
-  const matches = useMemo(() => {
-    if (!index || q.length < 2) return null
-    const base = scoped ? index.entries.filter((e) => e.s === scopeSurah) : index.entries
-    return base.filter((e) => e.norm.includes(q))
-  }, [index, q, scoped, scopeSurah])
+
+  // Debounced query to Supabase.
+  useEffect(() => {
+    if (q.length < 2) {
+      setResults(null)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    setError(false)
+    const handle = setTimeout(() => {
+      let alive = true
+      searchDocs(query, { kind, surah: scoped ? scopeSurah : undefined, limit: MAX_RENDER })
+        .then((rows) => {
+          if (alive) {
+            setResults(rows)
+            setLoading(false)
+          }
+        })
+        .catch(() => {
+          if (alive) {
+            setError(true)
+            setLoading(false)
+          }
+        })
+      return () => {
+        alive = false
+      }
+    }, 220)
+    return () => clearTimeout(handle)
+  }, [query, q, kind, scoped, scopeSurah])
 
   return (
     <div className="search-panel">
+      {allowKinds && (
+        <div className="search-modes" role="group" aria-label="نوع البحث">
+          <button
+            type="button"
+            className={`search-mode${kind === 'ayah' ? ' search-mode--active' : ''}`}
+            aria-pressed={kind === 'ayah'}
+            onClick={() => setKind('ayah')}
+          >
+            الآيات
+          </button>
+          <button
+            type="button"
+            className={`search-mode${kind === 'tafsir' ? ' search-mode--active' : ''}`}
+            aria-pressed={kind === 'tafsir'}
+            onClick={() => setKind('tafsir')}
+          >
+            التفسير
+          </button>
+        </div>
+      )}
+
       {scopeSurah !== undefined && (
         <div className="search-modes" role="group" aria-label="نطاق البحث">
           <button
@@ -91,43 +129,53 @@ export default function SearchPanel({ autoFocus, onNavigate, scopeSurah }: Searc
         ref={inputRef}
         type="search"
         className="index-search"
-        placeholder="اكتب كلمةً — مثل: المكر، الصبر، الرحمة…"
-        aria-label="ابحث عن كلمة في القرآن"
+        placeholder={
+          kind === 'tafsir'
+            ? 'ابحث في التفسير الميسر…'
+            : 'اكتب كلمةً — مثل: المكر، الصبر، الرحمة…'
+        }
+        aria-label="ابحث في القرآن"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
 
       <div className="search-body">
-        {!index ? (
-          <p className="search-status">…جارٍ تحميل فهرس القرآن الكريم</p>
-        ) : q.length < 2 ? (
+        {q.length < 2 ? (
           <p className="search-status">
-            اكتب كلمةً (حرفين فأكثر) لتظهر الآيات التي وردت فيها
+            اكتب كلمةً (حرفين فأكثر) لتظهر النتائج
             {scoped ? ' في هذه السورة' : ' في القرآن كله'}.
           </p>
-        ) : matches && matches.length === 0 ? (
+        ) : error ? (
+          <p className="search-status">تعذّر الاتصال بمحرّك البحث. تحقّق من اتصالك وحاول مجددًا.</p>
+        ) : loading && !results ? (
+          <p className="search-status">…يبحث</p>
+        ) : results && results.length === 0 ? (
           <p className="search-status">
-            لا توجد آيات تحتوي هذه الكلمة{scoped ? ' في هذه السورة' : ''}.
+            لا توجد نتائج{scoped ? ' في هذه السورة' : ''}.
           </p>
-        ) : matches ? (
+        ) : results ? (
           <>
             <p className="search-count eyebrow">
-              وُجدت {toArabicNumerals(matches.length)} آية
+              وُجدت {toArabicNumerals(results.length)}
+              {results.length >= MAX_RENDER ? '+' : ''} نتيجة
               {scoped ? ' في هذه السورة' : ''}
-              {matches.length > MAX_RENDER ? ` — تُعرض أول ${toArabicNumerals(MAX_RENDER)}` : ''}
             </p>
             <ul className="search-results">
-              {matches.slice(0, MAX_RENDER).map((e) => (
-                <li key={`${e.s}:${e.n}`}>
-                  <Link to={`/surah/${e.s}`} className="search-result" onClick={onNavigate}>
+              {results.map((e) => (
+                <li key={`${e.kind}:${e.surah}:${e.ayah_from}`}>
+                  <Link
+                    to={`/surah/${e.surah}#ayah-${e.ayah_from}`}
+                    className="search-result"
+                    onClick={onNavigate}
+                  >
                     <span className="search-result__meta">
-                      <AyahStar n={e.n} size={30} />
+                      <AyahStar n={e.ayah_from} size={30} />
                       {!scoped && (
-                        <span className="search-result__surah">{index.names[e.s]}</span>
+                        <span className="search-result__surah">{surahName(e.surah)}</span>
                       )}
                     </span>
                     <span className="search-result__text" lang="ar">
-                      {highlight(e.text, q)}
+                      {highlight(e.body, q)}
                     </span>
                   </Link>
                 </li>

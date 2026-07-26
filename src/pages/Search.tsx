@@ -14,7 +14,7 @@ export function Component() {
       <section className="container search-head">
         <span className="eyebrow">بحث في القرآن</span>
         <h1 className="search-head__title">اعثر على الكلمة في القرآن كلّه</h1>
-        <SearchPanel autoFocus />
+        <SearchPanel autoFocus allowKinds />
       </section>
     </>
   )
