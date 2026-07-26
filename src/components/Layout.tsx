@@ -38,6 +38,9 @@ export default function Layout() {
             <NavLink to="/surahs" className="site-nav__link">
               السور
             </NavLink>
+            <NavLink to="/asbab" className="site-nav__link">
+              أسباب النزول
+            </NavLink>
           </nav>
           <span className="site-header__spacer" aria-hidden="true" />
         </div>

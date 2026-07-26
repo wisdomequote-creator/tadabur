@@ -12,6 +12,7 @@ export const routes: RouteRecord[] = [
       { index: true, lazy: () => import('./pages/Home') },
       { path: 'surahs', lazy: () => import('./pages/Surahs') },
       { path: 'search', lazy: () => import('./pages/Search') },
+      { path: 'asbab', lazy: () => import('./pages/Asbab') },
       {
         path: 'surah/:number',
         // Loader is static (not in the lazy module) so vite-react-ssg can wrap it

@@ -7,7 +7,8 @@
   "scripts": {
     "fetch-quran": "tsx scripts/fetch-quran.ts",
     "fetch-asbab": "tsx scripts/fetch-asbab.ts",
-    "prebuild": "tsx scripts/fetch-quran.ts && tsx scripts/fetch-asbab.ts",
+    "link-asbab": "tsx scripts/link-asbab.ts",
+    "prebuild": "tsx scripts/fetch-quran.ts && tsx scripts/fetch-asbab.ts && tsx scripts/link-asbab.ts",
     "dev": "vite",
     "build": "vite-react-ssg build",
     "preview": "vite preview",

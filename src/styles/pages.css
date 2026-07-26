@@ -317,6 +317,88 @@
   color: var(--brass);
 }
 
+/* cross-surah "same occasion" links on an asbab card */
+.asbab-card__related {
+  margin: 0.9rem 0 0;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--brass-hair);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--parchment-dim);
+}
+.asbab-card__related-label {
+  color: var(--brass);
+}
+.asbab-card__related-link {
+  color: var(--parchment);
+  border-bottom: 1px solid var(--brass-hair);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.asbab-card__related-link:hover {
+  color: var(--brass);
+  border-bottom-color: var(--brass);
+}
+
+/* ---- أسباب النزول search / browse page ---- */
+.asbab-page__lede {
+  margin: 0 0 1.4rem;
+  max-width: 44rem;
+  color: var(--parchment-dim);
+  line-height: 1.9;
+}
+.asbab-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+.asbab-result {
+  display: block;
+  padding: 1rem 1.2rem;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-right: 2px solid var(--brass-hair);
+  border-radius: var(--radius);
+  color: var(--parchment);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.asbab-result:hover {
+  border-right-color: var(--brass);
+  background: var(--surface-2);
+  color: var(--parchment);
+}
+.asbab-result__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  margin-bottom: 0.55rem;
+}
+.asbab-result__surah {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--brass);
+}
+.asbab-result__ayah {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--parchment-faint);
+}
+.asbab-result__text {
+  display: block;
+  font-family: var(--font-quran);
+  font-size: 1.25rem;
+  line-height: 2.05;
+  color: var(--parchment-dim);
+}
+.asbab-result__related {
+  display: block;
+  margin-top: 0.6rem;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--brass-dim);
+}
+
 /* "سبب النزول" jump button inside the ayah popover */
 .ayah-pop__asbab {
   flex: 0 0 auto;

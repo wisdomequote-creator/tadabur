@@ -5,6 +5,13 @@ export interface Ayah {
 
 export type Revelation = 'meccan' | 'medinan'
 
+/** A pointer to another ayah (possibly in another surah) — used for cross-links. */
+export interface AyahRef {
+  surah: number
+  from: number
+  to: number
+}
+
 /**
  * One سبب نزول (occasion of revelation) narration, mapped to the ayah or ayah
  * range it concerns. Source: أسباب النزول للإمام الواحدي (altafsir.com).
@@ -16,6 +23,12 @@ export interface AsbabEntry {
   to: number
   /** The narration text (Arabic). */
   text: string
+  /**
+   * Other ayat (in this or other surahs) revealed on the SAME occasion — i.e.
+   * whose al-Wāḥidī narration is textually the same. Computed at build time;
+   * omitted when there are none.
+   */
+  related?: AyahRef[]
 }
 
 /** Full per-surah payload, code-split into its own chunk. */

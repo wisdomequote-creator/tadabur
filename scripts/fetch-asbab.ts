@@ -230,6 +230,7 @@ async function main() {
   let surahsWithAsbab = 0
   const warnings: string[] = []
   const widened: string[] = []
+  const pendingForNas: Entry[] = [] // an-Nās (114) narration peeled off the 113 page
 
   for (let s = start; s <= end; s++) {
     const entries: Entry[] = []
@@ -272,6 +273,24 @@ async function main() {
         entries.push({ from, to, text: n.text })
       }
     }
+
+    // The muʿawwidhatān (al-Falaq 113 + an-Nās 114) were revealed together on
+    // one occasion (the Labīd b. al-Aʿsam sorcery). altafsir prints an-Nās's
+    // narration on the 113 page and serves nothing for surah 114, so peel that
+    // narration off to its true surah.
+    if (s === 113) {
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const head = entries[i]!.text
+          .slice(0, 140)
+          .replace(/[ً-ْٰـ]/g, '')
+          .replace(/ٱ/g, 'ا')
+        if (head.includes('برب الناس')) {
+          pendingForNas.unshift(entries[i]!)
+          entries.splice(i, 1)
+        }
+      }
+    }
+    if (s === 114 && pendingForNas.length) entries.push(...pendingForNas)
 
     // Widen ranges against the English edition's explicit spans (see
     // fetchEnglishSpans). Anchor on the start ayah; only ever extend the end.
