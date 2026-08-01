@@ -6,9 +6,11 @@ interface SearchModalProps {
   onClose: () => void
   /** Current surah — enables the "this surah" scope toggle. */
   surahNumber?: number
+  /** Offer the الآيات / التفسير content toggle. */
+  allowKinds?: boolean
 }
 
-export default function SearchModal({ open, onClose, surahNumber }: SearchModalProps) {
+export default function SearchModal({ open, onClose, surahNumber, allowKinds }: SearchModalProps) {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -45,7 +47,7 @@ export default function SearchModal({ open, onClose, surahNumber }: SearchModalP
             ×
           </button>
         </header>
-        <SearchPanel autoFocus onNavigate={onClose} scopeSurah={surahNumber} />
+        <SearchPanel autoFocus onNavigate={onClose} scopeSurah={surahNumber} allowKinds={allowKinds} />
       </div>
     </div>
   )

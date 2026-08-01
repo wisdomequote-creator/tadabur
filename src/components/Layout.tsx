@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { toArabicNumerals } from '../lib/numerals'
 import { TOTAL_SURAHS } from '../lib/constants'
 import AskWidget from './AskWidget'
+import SearchFab from './SearchFab'
 
 function Brandmark() {
   return (
@@ -60,6 +61,7 @@ export default function Layout() {
         </div>
       </footer>
 
+      <SearchFab />
       <AskWidget />
     </div>
   )
