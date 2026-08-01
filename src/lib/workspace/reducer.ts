@@ -28,6 +28,8 @@ export type WorkspaceAction =
   | { type: 'resizeNode'; id: string; w: number; h: number }
   | { type: 'moveToAxis'; n: number; axisId: string }
   | { type: 'moveToBank'; n: number }
+  | { type: 'moveManyToAxis'; ns: number[]; axisId: string }
+  | { type: 'moveManyToBank'; ns: number[] }
   | { type: 'addQuestion' }
   | { type: 'deleteQuestion'; id: string }
   | { type: 'setQuestion'; id: string; field: 'q' | 'a'; value: string }
@@ -95,6 +97,22 @@ function detach(
     bank: state.bank.filter((x) => x !== n),
     axes: state.axes.map((a) =>
       a.ayat.includes(n) ? { ...a, ayat: a.ayat.filter((x) => x !== n) } : a,
+    ),
+  }
+}
+
+/** Pull a whole set of ayat out of the bank and every axis. */
+function detachMany(
+  state: WorkspaceState,
+  ns: number[],
+): Pick<WorkspaceState, 'bank' | 'axes'> {
+  const set = new Set(ns)
+  return {
+    bank: state.bank.filter((x) => !set.has(x)),
+    axes: state.axes.map((a) =>
+      a.ayat.some((x) => set.has(x))
+        ? { ...a, ayat: a.ayat.filter((x) => !set.has(x)) }
+        : a,
     ),
   }
 }
@@ -181,6 +199,26 @@ export function workspaceReducer(
     case 'moveToBank': {
       const { bank, axes } = detach(state, action.n)
       return { ...state, bank: sortNums([...bank, action.n]), axes }
+    }
+
+    case 'moveManyToAxis': {
+      if (action.ns.length === 0) return state
+      const { bank, axes } = detachMany(state, action.ns)
+      return {
+        ...state,
+        bank,
+        axes: axes.map((a) =>
+          a.id === action.axisId
+            ? { ...a, ayat: sortNums([...new Set([...a.ayat, ...action.ns])]) }
+            : a,
+        ),
+      }
+    }
+
+    case 'moveManyToBank': {
+      if (action.ns.length === 0) return state
+      const { bank, axes } = detachMany(state, action.ns)
+      return { ...state, bank: sortNums([...new Set([...bank, ...action.ns])]), axes }
     }
 
     case 'addQuestion':

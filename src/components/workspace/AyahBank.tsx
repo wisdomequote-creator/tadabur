@@ -2,30 +2,22 @@ import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
 import { toArabicNumerals, toArabicRange } from '../../lib/numerals'
 import { BANK_PAGE_SIZE } from '../../lib/constants'
-import AyahChip, { DRAG_MIME } from './AyahChip'
+import AyahChip, { readDraggedAyat } from './AyahChip'
 
 interface AyahBankProps {
   bank: number[]
   ayahCount: number
   textOf: (n: number) => string
-  selectedAyah: number | null
-  selectionAssigned: boolean
-  onSelectAyah: (n: number) => void
-  onReturnToBank: (n: number) => void
-}
-
-function readDraggedAyah(e: DragEvent): number | null {
-  const raw = e.dataTransfer.getData(DRAG_MIME) || e.dataTransfer.getData('text/plain')
-  const n = Number(raw)
-  return Number.isInteger(n) && n > 0 ? n : null
+  selectedAyat: number[]
+  onSelectAyah: (n: number, additive: boolean) => void
+  onReturnToBank: (ns: number[]) => void
 }
 
 export default function AyahBank({
   bank,
   ayahCount,
   textOf,
-  selectedAyah,
-  selectionAssigned,
+  selectedAyat,
   onSelectAyah,
   onReturnToBank,
 }: AyahBankProps) {
@@ -42,11 +34,17 @@ export default function AyahBank({
     return bank.filter((n) => n >= from && n <= to)
   }, [bank, paginated, from, to])
 
+  // Selected ayat that are currently assigned to an axis (not in the bank).
+  const assignedSelected = useMemo(() => {
+    const inBank = new Set(bank)
+    return selectedAyat.filter((n) => !inBank.has(n))
+  }, [selectedAyat, bank])
+
   function handleDrop(e: DragEvent) {
     e.preventDefault()
     setDragOver(false)
-    const n = readDraggedAyah(e)
-    if (n !== null) onReturnToBank(n)
+    const ns = readDraggedAyat(e)
+    if (ns.length) onReturnToBank(ns)
   }
 
   return (
@@ -64,12 +62,15 @@ export default function AyahBank({
         <div>
           <span className="eyebrow">بنك الآيات</span>
           <p className="bank__hint">
-            {toArabicNumerals(bank.length)} آية بانتظار التوزيع — اضغط رقم الآية لقراءتها، ثم اسحبها إلى محور أو اختر وجهتها.
+            {toArabicNumerals(bank.length)} آية بانتظار التوزيع — اضغط رقم الآية لتحديدها،
+            و<strong>Ctrl</strong> (أو ⌘) لتحديد أكثر من آية معًا، ثم اسحبها إلى دائرة المحور.
           </p>
         </div>
-        {selectionAssigned && selectedAyah !== null && (
-          <button type="button" className="place-btn" onClick={() => onReturnToBank(selectedAyah)}>
-            أعِد الآية {toArabicNumerals(selectedAyah)} إلى البنك ↩
+        {assignedSelected.length > 0 && (
+          <button type="button" className="place-btn" onClick={() => onReturnToBank(assignedSelected)}>
+            {assignedSelected.length === 1
+              ? `أعِد الآية ${toArabicNumerals(assignedSelected[0] as number)} إلى البنك ↩`
+              : `أعِد المحدَّد (${toArabicNumerals(assignedSelected.length)}) إلى البنك ↩`}
           </button>
         )}
       </div>
@@ -107,7 +108,8 @@ export default function AyahBank({
               key={n}
               n={n}
               text={textOf(n)}
-              selected={selectedAyah === n}
+              selected={selectedAyat.includes(n)}
+              selectedAyat={selectedAyat}
               size={42}
               onSelect={onSelectAyah}
             />

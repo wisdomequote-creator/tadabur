@@ -2,33 +2,27 @@ import { useState } from 'react'
 import type { DragEvent, HTMLAttributes } from 'react'
 import type { Axis } from '../../lib/types'
 import { toArabicNumerals } from '../../lib/numerals'
-import AyahChip, { DRAG_MIME } from './AyahChip'
+import AyahChip, { readDraggedAyat } from './AyahChip'
 
 interface AxisColumnProps {
   axis: Axis
   index: number
   textOf: (n: number) => string
-  selectedAyah: number | null
-  onSelectAyah: (n: number) => void
+  selectedAyat: number[]
+  onSelectAyah: (n: number, additive: boolean) => void
   onSetTitle: (axisId: string, value: string) => void
   onSetNotes: (axisId: string, value: string) => void
-  onPlaceHere: (n: number, axisId: string) => void
+  onPlaceHere: (ns: number[], axisId: string) => void
   onDelete: (axisId: string) => void
   /** Pointer handlers spread on the header so it acts as the node's drag handle. */
   handleProps?: HTMLAttributes<HTMLElement>
-}
-
-function readDraggedAyah(e: DragEvent): number | null {
-  const raw = e.dataTransfer.getData(DRAG_MIME) || e.dataTransfer.getData('text/plain')
-  const n = Number(raw)
-  return Number.isInteger(n) && n > 0 ? n : null
 }
 
 export default function AxisColumn({
   axis,
   index,
   textOf,
-  selectedAyah,
+  selectedAyat,
   onSelectAyah,
   onSetTitle,
   onSetNotes,
@@ -38,13 +32,14 @@ export default function AxisColumn({
 }: AxisColumnProps) {
   const [dragOver, setDragOver] = useState(false)
 
-  const selectionElsewhere = selectedAyah !== null && !axis.ayat.includes(selectedAyah)
+  // Selected ayat not already in this axis — offered by the "place here" button.
+  const selectionOutside = selectedAyat.filter((n) => !axis.ayat.includes(n))
 
   function handleDrop(e: DragEvent) {
     e.preventDefault()
     setDragOver(false)
-    const n = readDraggedAyah(e)
-    if (n !== null) onPlaceHere(n, axis.id)
+    const ns = readDraggedAyat(e)
+    if (ns.length) onPlaceHere(ns, axis.id)
   }
 
   const zoneLabel = axis.title.trim()
@@ -114,7 +109,8 @@ export default function AxisColumn({
                 key={n}
                 n={n}
                 text={textOf(n)}
-                selected={selectedAyah === n}
+                selected={selectedAyat.includes(n)}
+                selectedAyat={selectedAyat}
                 size={40}
                 onSelect={onSelectAyah}
               />
@@ -123,13 +119,15 @@ export default function AxisColumn({
         )}
       </div>
 
-      {selectionElsewhere && (
+      {selectionOutside.length > 0 && (
         <button
           type="button"
           className="place-btn"
-          onClick={() => onPlaceHere(selectedAyah, axis.id)}
+          onClick={() => onPlaceHere(selectionOutside, axis.id)}
         >
-          ضع الآية {toArabicNumerals(selectedAyah)} هنا ↩
+          {selectionOutside.length === 1
+            ? `ضع الآية ${toArabicNumerals(selectionOutside[0] as number)} هنا ↩`
+            : `ضع الآيات المحدَّدة (${toArabicNumerals(selectionOutside.length)}) هنا ↩`}
         </button>
       )}
 

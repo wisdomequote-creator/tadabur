@@ -12,15 +12,15 @@ interface Size {
 interface MindMapProps {
   state: WorkspaceState
   textOf: (n: number) => string
-  selectedAyah: number | null
+  selectedAyat: number[]
   onMoveNode: (id: string, x: number, y: number) => void
   onResizeNode: (id: string, w: number, h: number) => void
   onSetTheme: (value: string) => void
   onSetAxisTitle: (axisId: string, value: string) => void
   onSetAxisNotes: (axisId: string, value: string) => void
-  onPlaceHere: (n: number, axisId: string) => void
+  onPlaceHere: (ns: number[], axisId: string) => void
   onDelete: (axisId: string) => void
-  onSelectAyah: (n: number) => void
+  onSelectAyah: (n: number, additive: boolean) => void
 }
 
 /** Circle nodes grow with their ayah count so they never overflow/scroll. */
@@ -34,7 +34,7 @@ const FALLBACK_ROOT_H = 130
 export default function MindMap({
   state,
   textOf,
-  selectedAyah,
+  selectedAyat,
   onMoveNode,
   onResizeNode,
   onSetTheme,
@@ -367,7 +367,7 @@ export default function MindMap({
               axis={axis}
               index={i}
               textOf={textOf}
-              selectedAyah={selectedAyah}
+              selectedAyat={selectedAyat}
               onSelectAyah={onSelectAyah}
               onSetTitle={onSetAxisTitle}
               onSetNotes={onSetAxisNotes}

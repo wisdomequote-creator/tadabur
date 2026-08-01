@@ -19,7 +19,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved'
 
 export default function SurahWorkspace({ surah }: { surah: SurahData }) {
   const [state, dispatch] = useReducer(workspaceReducer, surah, initWorkspace)
-  const [selectedAyah, setSelectedAyah] = useState<number | null>(null)
+  const [selected, setSelected] = useState<number[]>([])
   const [status, setStatus] = useState<SaveStatus>('idle')
   const [searchOpen, setSearchOpen] = useState(false)
   const hydrated = useRef(false)
@@ -49,29 +49,26 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
   )
   const textOf = (n: number): string => textMap.get(n) ?? ''
 
-  // Where does each ayah currently live? 'bank' or an axis id.
-  const location = useMemo(() => {
-    const m = new Map<number, string>()
-    for (const n of state.bank) m.set(n, 'bank')
-    for (const a of state.axes) for (const n of a.ayat) m.set(n, a.id)
-    return m
-  }, [state])
+  // A single tapped ayah opens the reader; Ctrl/⌘-click builds a multi-selection.
+  const readerAyah = selected.length === 1 ? (selected[0] as number) : null
 
-  const selectionAssigned =
-    selectedAyah !== null && location.get(selectedAyah) !== 'bank'
-
-  function toggleSelect(n: number) {
-    setSelectedAyah((prev) => (prev === n ? null : n))
+  function toggleSelect(n: number, additive: boolean) {
+    setSelected((prev) => {
+      if (additive) {
+        return prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]
+      }
+      return prev.length === 1 && prev[0] === n ? [] : [n]
+    })
   }
 
-  function placeInAxis(n: number, axisId: string) {
-    dispatch({ type: 'moveToAxis', n, axisId })
-    setSelectedAyah(null)
+  function placeInAxis(ns: number[], axisId: string) {
+    dispatch({ type: 'moveManyToAxis', ns, axisId })
+    setSelected([])
   }
 
-  function returnToBank(n: number) {
-    dispatch({ type: 'moveToBank', n })
-    setSelectedAyah(null)
+  function returnToBank(ns: number[]) {
+    dispatch({ type: 'moveManyToBank', ns })
+    setSelected([])
   }
 
   function handleDeleteAxis(axisId: string) {
@@ -90,7 +87,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
     if (!ok) return
     dispatch({ type: 'reset', ayahCount: surah.ayahCount })
     clearState(surah.number)
-    setSelectedAyah(null)
+    setSelected([])
   }
 
   function handleExport() {
@@ -102,13 +99,13 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
 
   return (
     <div className="workspace">
-      {/* Tapping an ayah shows its text in a card anchored right above it. */}
-      {selectedAyah !== null && (
+      {/* Tapping a single ayah shows its text in a card anchored right above it. */}
+      {readerAyah !== null && (
         <AyahReader
-          n={selectedAyah}
-          text={textOf(selectedAyah)}
-          asbab={asbabForAyah(surah.asbab, selectedAyah)}
-          onClose={() => setSelectedAyah(null)}
+          n={readerAyah}
+          text={textOf(readerAyah)}
+          asbab={asbabForAyah(surah.asbab, readerAyah)}
+          onClose={() => setSelected([])}
         />
       )}
 
@@ -119,8 +116,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
             bank={state.bank}
             ayahCount={surah.ayahCount}
             textOf={textOf}
-            selectedAyah={selectedAyah}
-            selectionAssigned={selectionAssigned}
+            selectedAyat={selected}
             onSelectAyah={toggleSelect}
             onReturnToBank={returnToBank}
           />
@@ -147,7 +143,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
           <MindMap
             state={state}
             textOf={textOf}
-            selectedAyah={selectedAyah}
+            selectedAyat={selected}
             onMoveNode={(id, x, y) => dispatch({ type: 'moveNode', id, x, y })}
             onResizeNode={(id, w, h) => dispatch({ type: 'resizeNode', id, w, h })}
             onSetTheme={(value) => dispatch({ type: 'setSurahTheme', value })}
