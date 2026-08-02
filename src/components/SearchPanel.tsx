@@ -5,7 +5,10 @@ import AyahStar from './AyahStar'
 import { toArabicNumerals } from '../lib/numerals'
 import { normalizeArabic } from '../lib/arabic'
 import { surahName } from '../lib/surahNames'
-import { searchDocs, type DocKind, type DocResult } from '../lib/search'
+import { formatRoot } from '../lib/roots'
+import { searchByRoot, searchDocs, type DocResult } from '../lib/search'
+
+type Mode = 'ayah' | 'tafsir' | 'root'
 
 const MAX_RENDER = 200
 
@@ -37,8 +40,9 @@ interface SearchPanelProps {
 export default function SearchPanel({ autoFocus, onNavigate, scopeSurah, allowKinds }: SearchPanelProps) {
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<'surah' | 'all'>(scopeSurah ? 'surah' : 'all')
-  const [kind, setKind] = useState<DocKind>('ayah')
+  const [kind, setKind] = useState<Mode>('ayah')
   const [results, setResults] = useState<DocResult[] | null>(null)
+  const [rootLabel, setRootLabel] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -54,31 +58,38 @@ export default function SearchPanel({ autoFocus, onNavigate, scopeSurah, allowKi
   useEffect(() => {
     if (q.length < 2) {
       setResults(null)
+      setRootLabel(null)
       setLoading(false)
       return
     }
     setLoading(true)
     setError(false)
+    let alive = true
     const handle = setTimeout(() => {
-      let alive = true
-      searchDocs(query, { kind, surah: scoped ? scopeSurah : undefined, limit: MAX_RENDER })
-        .then((rows) => {
-          if (alive) {
-            setResults(rows)
-            setLoading(false)
-          }
-        })
-        .catch(() => {
-          if (alive) {
-            setError(true)
-            setLoading(false)
-          }
-        })
-      return () => {
-        alive = false
+      const done = (rows: DocResult[], root: string | null) => {
+        if (!alive) return
+        setResults(rows)
+        setRootLabel(root)
+        setLoading(false)
+      }
+      const fail = () => {
+        if (alive) {
+          setError(true)
+          setLoading(false)
+        }
+      }
+      if (kind === 'root') {
+        searchByRoot(query).then((r) => done(r.results, r.root)).catch(fail)
+      } else {
+        searchDocs(query, { kind, surah: scoped ? scopeSurah : undefined, limit: MAX_RENDER })
+          .then((rows) => done(rows, null))
+          .catch(fail)
       }
     }, 220)
-    return () => clearTimeout(handle)
+    return () => {
+      alive = false
+      clearTimeout(handle)
+    }
   }, [query, q, kind, scoped, scopeSurah])
 
   return (
@@ -101,10 +112,19 @@ export default function SearchPanel({ autoFocus, onNavigate, scopeSurah, allowKi
           >
             التفسير
           </button>
+          <button
+            type="button"
+            className={`search-mode${kind === 'root' ? ' search-mode--active' : ''}`}
+            aria-pressed={kind === 'root'}
+            onClick={() => setKind('root')}
+            title="ابحث بجذر الكلمة — يجمع كل صيغها"
+          >
+            الجذر
+          </button>
         </div>
       )}
 
-      {scopeSurah !== undefined && (
+      {scopeSurah !== undefined && kind !== 'root' && (
         <div className="search-modes" role="group" aria-label="نطاق البحث">
           <button
             type="button"
@@ -130,9 +150,11 @@ export default function SearchPanel({ autoFocus, onNavigate, scopeSurah, allowKi
         type="search"
         className="index-search"
         placeholder={
-          kind === 'tafsir'
-            ? 'ابحث في التفسير الميسر…'
-            : 'اكتب كلمةً — مثل: المكر، الصبر، الرحمة…'
+          kind === 'root'
+            ? 'اكتب كلمةً — مثل: صابر — لتجد كل ما يشترك في جذرها'
+            : kind === 'tafsir'
+              ? 'ابحث في التفسير الميسر…'
+              : 'اكتب كلمةً — مثل: المكر، الصبر، الرحمة…'
         }
         aria-label="ابحث في القرآن"
         value={query}
@@ -151,14 +173,25 @@ export default function SearchPanel({ autoFocus, onNavigate, scopeSurah, allowKi
           <p className="search-status">…يبحث</p>
         ) : results && results.length === 0 ? (
           <p className="search-status">
-            لا توجد نتائج{scoped ? ' في هذه السورة' : ''}.
+            {kind === 'root'
+              ? 'لم أتعرّف على جذرٍ لهذه الكلمة في القرآن.'
+              : `لا توجد نتائج${scoped ? ' في هذه السورة' : ''}.`}
           </p>
         ) : results ? (
           <>
             <p className="search-count eyebrow">
+              {kind === 'root' && rootLabel && (
+                <>
+                  الجذر{' '}
+                  <span className="search-root" lang="ar">
+                    {formatRoot(rootLabel)}
+                  </span>{' '}
+                  ·{' '}
+                </>
+              )}
               وُجدت {toArabicNumerals(results.length)}
               {results.length >= MAX_RENDER ? '+' : ''} نتيجة
-              {scoped ? ' في هذه السورة' : ''}
+              {kind !== 'root' && scoped ? ' في هذه السورة' : ''}
             </p>
             <ul className="search-results">
               {results.map((e) => (

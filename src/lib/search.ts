@@ -46,3 +46,42 @@ export async function searchDocs(
   if (!res.ok) throw new Error(`search failed (${res.status})`)
   return (await res.json()) as DocResult[]
 }
+
+export interface RootSearch {
+  /** The root the query resolved to (Arabic), or null if none. */
+  root: string | null
+  results: DocResult[]
+}
+
+/**
+ * Root-based search: resolves the typed word to its triliteral root (via the
+ * `search_by_root` Postgres function) and returns every ayah that contains any
+ * word from that root — e.g. صابر → root صبر → all صبر ayat.
+ */
+export async function searchByRoot(q: string): Promise<RootSearch> {
+  const norm = normalizeArabic(q.trim())
+  if (norm.length < 2) return { root: null, results: [] }
+
+  const res = await fetch(`${BASE}/rest/v1/rpc/search_by_root`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q: norm }),
+  })
+  if (!res.ok) throw new Error(`root search failed (${res.status})`)
+  const rows = (await res.json()) as {
+    surah: number
+    ayah: number
+    body: string
+    matched_root: string
+  }[]
+  return {
+    root: rows[0]?.matched_root ?? null,
+    results: rows.map((r) => ({
+      surah: r.surah,
+      ayah_from: r.ayah,
+      ayah_to: r.ayah,
+      body: r.body,
+      kind: 'ayah' as const,
+    })),
+  }
+}
