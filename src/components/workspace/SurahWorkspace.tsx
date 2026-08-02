@@ -208,6 +208,7 @@ export default function SurahWorkspace({ surah }: { surah: SurahData }) {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         surahNumber={surah.number}
+        allowKinds
       />
     </div>
   )
